@@ -1,0 +1,53 @@
+/* Additional styling specific to the login page */
+
+/* Center the login form */
+form {
+    margin: 100px auto;
+    text-align: center;
+    max-width: 300px;
+}
+
+/* Adjust input width and alignment */
+label, input[type="text"], input[type="password"] {
+    display: block;
+    width: 100%;
+    padding: 10px;
+    margin-bottom: 15px;
+    /* border: 1px solid #ccc; */
+    border-radius: 5px;
+    box-sizing: border-box;
+}
+
+/* Style submit button */
+input[type="submit"] {
+    display: inline-block;
+    width: auto;
+    padding: 12px 20px;
+    border: none;
+    background-color: #007bff;
+    color: white;
+    border-radius: 5px;
+    font-size: 16px;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+}
+
+input[type="submit"]:hover {
+    background-color: #0056b3;
+}
+
+/* Add some spacing around the form */
+.content {
+    padding: 20px;
+}
+
+/* Center the "Don't have an account?" link */
+p {
+    text-align: center;
+    margin-top: 10px;
+}
+
+h1{
+    padding-top: 15px;
+    text-align: center;
+}

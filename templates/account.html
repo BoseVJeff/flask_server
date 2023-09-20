@@ -1,0 +1,34 @@
+{% extends 'layout.html' %}
+
+{% block title %}
+Account Details
+{% endblock %}
+
+{% block style %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+<link rel="stylesheet" href="{{ url_for('static', filename='css/account.css') }}">
+{% endblock style %}
+
+{% block content %}
+<div class="account-container">
+    <div class="profile-picture">
+        {% if profile_picture %}
+            <img src="{{ url_for('static', filename='profile_pictures/' + profile_picture) }}" alt="Profile Picture">
+        {% else %}
+            <p>No profile picture</p>
+        {% endif %}
+    </div>
+
+    <div class="account-details">
+        <p><strong>Username:</strong> {{ username }}</p>
+        <p><strong>Email:</strong> {{ email }}</p>
+    </div>
+</div>
+
+<div class="account-buttons">
+    <a href="{{ url_for('upload_profile_picture', username=username) }}" class="upload-picture-button">Upload/Update Profile Picture</a>
+    <a href="{{ url_for('change_password', username=username) }}" class="account-button">Change Password</a>
+    <a href="{{ url_for('home', username=username) }}" class="account-button">Back to Home</a>
+    <a href="{{ url_for('delete_account', username=username) }}" class="account-button delete-account-button" onclick="return confirm('Are you sure you want to delete your account? This action is irreversible.');">Delete Account</a>
+</div>
+{% endblock content %}

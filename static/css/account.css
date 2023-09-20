@@ -1,0 +1,78 @@
+/* account.css */
+
+.account-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    margin-top: 20px;
+}
+
+.profile-picture {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    width: 200px;
+    height: 200px;
+    border-radius: 50%;
+    background-color: #f0f0f0;
+    overflow: hidden;
+    margin-bottom: 20px;
+}
+
+.profile-picture img {
+    width: 100%;
+    height: auto;
+}
+
+.account-details {
+    text-align: center;
+}
+
+.account-details h1 {
+    font-size: 24px;
+    margin-bottom: 10px;
+}
+
+.account-details p {
+    font-size: 18px;
+    margin-bottom: 5px;
+}
+
+.account-buttons {
+    display: flex;
+    justify-content: center;
+    margin-top: 20px;
+}
+
+.upload-picture-button,
+.account-button {
+    display: inline-block;
+    background-color: #007bff;
+    color: #fff;
+    padding: 10px 20px;
+    border-radius: 5px;
+    text-decoration: none;
+    font-weight: bold;
+    margin-right: 10px;
+    transition: background-color 0.3s ease;
+}
+
+.upload-picture-button:hover,
+.account-button:hover {
+    background-color: #0056b3;
+    color: whitesmoke;
+}
+
+.back-button {
+    background-color: #ccc;
+    color: #333;
+    transition: background-color 0.3s ease;
+}
+
+.back-button:hover {
+    background-color: #999;
+}
+
+.delete-account-button {
+    background-color: #d9534f;
+}

@@ -1,0 +1,46 @@
+{% extends 'layout.html' %}
+
+{% block title %}
+Home
+{% endblock %}
+
+{% block style %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+<link rel="stylesheet" href="{{ url_for('static', filename='css/home.css') }}">
+{% endblock style %}
+
+{% block content %}
+<nav class="navbar">
+    <div class="profile-picture">
+        <a href="{{ url_for('account', username=username) }}">
+            {% if profile_picture %}
+            <img src="{{ url_for('static', filename='profile_pictures/' + profile_picture) }}" alt="Profile Picture">
+            {% else %}
+            <p>No profile picture</p>
+            {% endif %}
+        </a>
+        <div class="profile-dropdown">
+            <ul>
+                <li><a href="{{ url_for('logout') }}">Logout</a></li>
+            </ul>
+        </div>
+    </div>
+</nav>
+
+
+<div class="content">
+    <h1>Welcome, {{ username }}!</h1>
+    <!-- ... content of the home page ... -->
+    {% if search_results %}
+    <div class="search-results">
+        <h2>Search Results:</h2>
+        <ul>
+            {% for result in search_results %}
+            <li><a href="{{ url_for('profile', username=result) }}">{{ result }}</a></li>
+            {% endfor %}
+        </ul>
+    </div>
+    {% endif %}
+</div>
+
+{% endblock content %}

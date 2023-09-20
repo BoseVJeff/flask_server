@@ -1,0 +1,21 @@
+{% extends 'layout.html' %}
+
+{% block title %}
+Upload Profile Picture
+{% endblock %}
+
+{% block style %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+<link rel="stylesheet" href="{{ url_for('static', filename='css/upload_profile_picture.css') }}">
+{% endblock style %}
+
+{% block content %}
+<h1>Upload or Update Profile Picture</h1>
+<form action="{{ url_for('upload_profile_picture', username=username) }}" method="post" enctype="multipart/form-data">
+    <label for="profile_picture">Profile Picture:</label>
+    <input type="file" id="profile_picture" name="profile_picture" required><br>
+
+    <input type="submit" value="Upload/Update">
+</form>
+<a href="{{ url_for('account', username=username) }}" class="back-button">Back to Account</a>
+{% endblock content %}
