@@ -188,12 +188,5 @@ def delete_account(username):
 def account_deleted():
     return "Your account has been deleted successfully."
 
-# @app.route('/create_tweet', methods=['POST'])
-# def create_tweet():
-    # Handle the form submission and tweet creation logic here
-    # Extract tweet text and image from the form data
-    # Save the tweet and image to your database or storage system
-    # return redirect(url_for('home'))  # Redirect back to the home page after tweeting
-   
 if __name__ == '__main__':
     app.run(debug=True)
