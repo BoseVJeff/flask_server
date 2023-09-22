@@ -8,6 +8,7 @@ app = Flask(__name__, static_url_path='/static', static_folder='static')
 DATABASE = 'users.db'
 
 def create_table():
+    # TODO: Add field for users that user is following
     conn = sqlite3.connect(DATABASE)
     cursor = conn.cursor()
     cursor.execute('''CREATE TABLE IF NOT EXISTS users
@@ -19,6 +20,8 @@ def create_table():
     conn.commit()
     conn.close()
 create_table()
+
+# Add table for posts with cols post_id, message (prob md), likes, poster_id
 
 def is_username_taken(username):
     conn = sqlite3.connect(DATABASE)
@@ -74,6 +77,7 @@ def signup():
     profile_picture = request.files['profile_picture']
     if profile_picture:
         profile_picture_filename = secure_filename(profile_picture.filename)
+        # TODO: Create folder if it does not exist
         profile_picture_path = os.path.join('static/profile_pictures', profile_picture_filename)
         profile_picture.save(profile_picture_path)
     else:
@@ -121,7 +125,7 @@ def account(username):
     conn.close()
 
     if user:
-        # user[1] is the username, user[2] is the email, user[4] is the profile_picture
+        # user[1] is the username, user[2] is the email, user[4] is the profile_picture TODO: Abstraact this into a function
         return render_template('account.html', username=user[1], email=user[2], profile_picture=user[4])
     else:
         # Handle user not found
