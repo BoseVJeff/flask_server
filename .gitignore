@@ -1,5 +1,8 @@
 flask_session/2029240f6d1128be89ddc32729463129
 flask_session/f8eecc52fdcc814cad7df6d87a815131
-static/profile_pictures/glad_to_see_my_favorite_tree_standing_healthy_after_this_years_numerous_typhoons_and_landslides_South_Korea_OC_3000x1500.jpg
-static/profile_pictures/WhatsApp_Image_2023-08-27_at_20.02.24.jpg
+static/profile_pictures/
 users.db
+__pycache__
+.vscode
+# `venv` for Vineet's system
+nuv
