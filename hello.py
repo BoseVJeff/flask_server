@@ -188,5 +188,13 @@ def delete_account(username):
 def account_deleted():
     return "Your account has been deleted successfully."
 
+@app.route("/users-data-all")
+def get_dict():
+    conn = sqlite3.connect("users.db")
+    curror = conn.cursor()
+    curror.execute('SELECT * FROM users')
+    data = curror.fetchall()
+    return render_template("list.html", data = data)
+
 if __name__ == '__main__':
     app.run(debug=True)
