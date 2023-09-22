@@ -1,4 +1,4 @@
-from flask import Flask, render_template, request, redirect, url_for, jsonify
+from flask import Flask, render_template, request, redirect, url_for
 import sqlite3, os
 from werkzeug.utils import secure_filename
 
@@ -151,7 +151,7 @@ def change_password(username):
         conn.commit()
         conn.close()
         success_message = "Password changed successfully"
-        return render_template('account.html', username=username, email=user[2], success_message=success_message)
+        return render_template('account.html', username=username, email=user[2],profile_picture=user[4] ,success_message=success_message)
     else:
         conn.close()
         error_message = "Incorrect old password"
@@ -192,12 +192,13 @@ def delete_account(username):
 def account_deleted():
     return "Your account has been deleted successfully."
 
-# @app.route('/create_tweet', methods=['POST'])
-# def create_tweet():
-    # Handle the form submission and tweet creation logic here
-    # Extract tweet text and image from the form data
-    # Save the tweet and image to your database or storage system
-    # return redirect(url_for('home'))  # Redirect back to the home page after tweeting
-    
+@app.route("/users-data-all")
+def get_dict():
+    conn = sqlite3.connect("users.db")
+    curror = conn.cursor()
+    curror.execute('SELECT * FROM users')
+    data = curror.fetchall()
+    return render_template("list.html", data = data)
+
 if __name__ == '__main__':
     app.run(debug=True)
