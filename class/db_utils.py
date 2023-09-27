@@ -71,11 +71,15 @@ class db:
         self.dbConnection.close()
         return
 
-        """Use named-style placeholders in SQL queries eg. `INSERT INTO lang VALUES(:name, :year)`.
     def executeOneQuery(self, sql: str, parameters: dict = {}):
+        """Execute ONE SQL query with the given parameters.
+
+        Use named-style placeholders in SQL queries eg. `INSERT INTO lang VALUES(:name, :year)`.
         Supply params as `({"name": "C", "year": 1972})`.
 
-        This is done to make substitutions explicit and to ensure style consistency with :py:func:`~db.executeManyQuery`
+        This is done to make substitutions explicit and to ensure style consistency with :py:func:`~db.executeManyQuery`.
+
+        For docs on dicts, see [docs here](https://docs.python.org/3/library/stdtypes.html#dict).
         """
         self.dbCursor.execute(sql, parameters)
         self.dbConnection.commit()
