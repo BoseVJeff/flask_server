@@ -94,5 +94,9 @@ class db:
         self.dbCursor.executemany(sql, parameters)
         self.dbConnection.commit()
         return
+
+    def executeScript(self, sql_script: str):
+        """Execute SQL statements in sql_script."""
+        self.dbCursor.execute(sql_script)
         self.dbConnection.commit()
         return
