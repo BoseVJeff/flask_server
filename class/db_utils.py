@@ -81,8 +81,18 @@ class db:
         self.dbConnection.commit()
         return
 
-    # This may not work perfectly
-    def executeManyQuery(self, sqls: List[str], parameters=Iterable):
-        self.dbCursor.executemany(sqls, parameters)
+    def executeManyQuery(self, sql: str, parameters=Iterable[dict]):
+        """Exectue ONE SQL query for each parameter in Iterable.
+
+        Use named-style placeholders in SQL queries eg. `INSERT INTO lang VALUES(:name, :year)`.
+        Supply params as `[{"name": "C", "year": 1972},{"name": "Fortran", "year": 1957}]`.
+
+        This is done to make substitutions explicit and to ensure style consistency with :py:func:`~db.executeOneQuery`.
+
+        For docs on dicts, see [docs here](https://docs.python.org/3/library/stdtypes.html#dict).
+        """
+        self.dbCursor.executemany(sql, parameters)
+        self.dbConnection.commit()
+        return
         self.dbConnection.commit()
         return
