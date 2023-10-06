@@ -5,6 +5,7 @@ form {
     margin: 50px auto;
     text-align: center;
     max-width: 300px;
+    max-height: 470px;
 }
 
 /* Adjust input width and alignment */
@@ -38,7 +39,7 @@ input[type="submit"]:hover {
 
 /* Add some spacing around the form */
 .content {
-    padding: 20px;
+    padding-bottom: 20px;
 }
 
 /* Center the "Already have an account?" link */

@@ -41,7 +41,7 @@ def is_email_taken(email):
 
 @app.route('/')
 def index():
-    return render_template('signup.html')
+    return render_template('login.html')
 
 @app.route('/home/<username>', methods=['GET', 'POST'])
 def home(username):
@@ -68,29 +68,33 @@ def home(username):
         error_message = "User not found"
         return render_template('error.html', error_message=error_message)
 
-@app.route('/signup', methods=['POST'])
+@app.route('/signup', methods=['POST',"GET"])
 def signup():
-    username = request.form['username']
-    email = request.form['email']
-    password = request.form['password']
+    if request.method == "POST":
+        username = request.form['username']
+        email = request.form['email']
+        password = request.form['password']
 
-    profile_picture = request.files['profile_picture']
-    if profile_picture:
-        profile_picture_filename = secure_filename(profile_picture.filename)
-        # TODO: Create folder if it does not exist
-        profile_picture_path = os.path.join('static/profile_pictures', profile_picture_filename)
-        profile_picture.save(profile_picture_path)
-    else:
-        profile_picture_filename = None
+        profile_picture = request.files['profile_picture']
+        if profile_picture:
+            profile_picture_filename = secure_filename(profile_picture.filename)
+            if not os.path.exists('static/profile_pictures'):
+                os.mkdir('static/profile_pictures')
+            profile_picture_path = os.path.join('static/profile_pictures', profile_picture_filename)
+            profile_picture.save(profile_picture_path)
+        else:
+            profile_picture_filename = None
 
-    conn = sqlite3.connect(DATABASE)
-    cursor = conn.cursor()
-    cursor.execute('INSERT INTO users (username, email, password, profile_picture) VALUES (?, ?, ?, ?)',
-                   (username, email, password, profile_picture_filename))
-    conn.commit()
-    conn.close()
+        conn = sqlite3.connect(DATABASE)
+        cursor = conn.cursor()
+        cursor.execute('INSERT INTO users (username, email, password, profile_picture) VALUES (?, ?, ?, ?)',
+                    (username, email, password, profile_picture_filename))
+        conn.commit()
+        conn.close()
 
-    return redirect(url_for('home', username=username))
+        return redirect(url_for('home', username=username))
+    elif request.method == "GET":
+        return render_template("signup.html")
 
 @app.route('/login', methods=['GET', 'POST'])
 def login():
