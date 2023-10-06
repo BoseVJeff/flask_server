@@ -15,7 +15,11 @@
 <body>
     <header>    
         <nav>
-            <span>Welcome{{( ", "+username +"!") }}</span>
+            {% if username == "" %}
+            <span>Welcome </span>
+            {% else %}
+            <span>Welcome, {{ username}}</span>
+            {%endif%}
         </nav>
     </header>
     <main>    

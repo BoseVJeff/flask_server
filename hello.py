@@ -41,7 +41,7 @@ def is_email_taken(email):
 
 @app.route('/')
 def index():
-    return render_template('login.html')
+    return render_template('login.html', username = "")
 
 @app.route('/home/<username>', methods=['GET', 'POST'])
 def home(username):
@@ -66,6 +66,7 @@ def home(username):
     else:
         # Handle user not found
         error_message = "User not found"
+        # TODO: add error.html file
         return render_template('error.html', error_message=error_message)
 
 @app.route('/signup', methods=['POST',"GET"])
@@ -94,7 +95,7 @@ def signup():
 
         return redirect(url_for('home', username=username))
     elif request.method == "GET":
-        return render_template("signup.html")
+        return render_template("signup.html" ,username = "")
 
 @app.route('/login', methods=['GET', 'POST'])
 def login():
@@ -114,7 +115,7 @@ def login():
             error_message = "Invalid username or password"
             return render_template('login.html', error_message=error_message)
 
-    return render_template('login.html')
+    return render_template('login.html' , username = "")
 
 @app.route('/logout')
 def logout():
@@ -134,7 +135,7 @@ def account(username):
     else:
         # Handle user not found
         error_message = "User not found"
-        return render_template('error.html', error_message=error_message)
+        return render_template('error.html', error_message=error_message ,username ="" )
     
 @app.route('/change_password/<username>')
 def change_password_page(username):
@@ -202,7 +203,7 @@ def get_dict():
     curror = conn.cursor()
     curror.execute('SELECT * FROM users')
     data = curror.fetchall()
-    return render_template("list.html", data = data)
+    return render_template("list.html", data = data ,username= "")
 
 if __name__ == '__main__':
     app.run(debug=True)
