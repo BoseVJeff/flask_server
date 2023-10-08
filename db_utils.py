@@ -209,17 +209,20 @@ class Db:
             os.path.join("static", "images", f"{fileName}.{imageExtension}")
         )
 
-        # Open file for writing binary data
-        imageHandle = imagePath.open("+wb")
+        if not (imagePath.exists()):
+            # Skip writing file to disk if it already exists.
 
-        while True:
-            # Read data in chunks to avoid running out of memory.
-            data = imageStream.read(BUF_SIZE)
-            if not data:
-                break
-            imageHandle.write(data)
+            # Open file for writing binary data
+            imageHandle = imagePath.open("+wb")
 
-        imageHandle.close()
+            while True:
+                # Read data in chunks to avoid running out of memory.
+                data = imageStream.read(BUF_SIZE)
+                if not data:
+                    break
+                imageHandle.write(data)
+
+            imageHandle.close()
 
         return fileName
 
