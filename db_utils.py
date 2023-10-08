@@ -126,7 +126,11 @@ class Db:
         elif count == 0:
             return []
         elif count == 1:
-            return [self.dbCursor.fetchone()]
+            result = self.dbCursor.fetchone()
+            if result is None:
+                return []
+            else:
+                return [result]
         else:
             return self.dbCursor.fetchmany(size=count)
 
