@@ -224,7 +224,7 @@ class Db:
 
             imageHandle.close()
 
-        return fileName
+        return imagePath
 
 
 def getImageExtensionFromFilename(filename: str) -> str:
