@@ -2,24 +2,31 @@ from flask import Flask, render_template, request, redirect, url_for
 import sqlite3, os
 from werkzeug.utils import secure_filename
 
-app = Flask(__name__, static_url_path='/static', static_folder='static')
+import db_utils
 
-# Configure the database
-DATABASE = 'users.db'
+app = Flask(__name__, static_url_path="/static", static_folder="static")
 
-def create_table():
-    # TODO: Add field for users that user is following
-    conn = sqlite3.connect(DATABASE)
-    cursor = conn.cursor()
-    cursor.execute('''CREATE TABLE IF NOT EXISTS users
-                      (id INTEGER PRIMARY KEY AUTOINCREMENT,
-                      username TEXT NOT NULL,
-                      email TEXT NOT NULL,
-                      password TEXT NOT NULL,
-                      profile_picture TEXT)''')
-    conn.commit()
-    conn.close()
-create_table()
+# Database for user info.
+DATABASE_PATH = "users.db"
+
+# TODO: Remove this after transition to `db_obj` is complete
+DATABASE = DATABASE_PATH
+
+# Database object
+db_obj = db_utils.Db(DATABASE_PATH, db_utils.DbType.SQLITE)
+
+
+def init() -> None:
+    """Handles init for the server.
+
+    Expect this to run on startup only.
+    """
+    db_obj.dbInit()
+    return
+
+
+# Initialise the server.
+init()
 
 # Add table for posts with cols post_id, message (prob md), likes, poster_id
 
