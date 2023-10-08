@@ -13,19 +13,25 @@
 </head>
 
 <body>
-    <nav>
-        <div class="nav-right">
-            <span>Welcome, {{username}}</span>
-            {% block logout %}{% endblock %}
+    <header>    
+        <nav>
+            {% if username == "" %}
+            <span>Welcome </span>
+            {% else %}
+            <span>Welcome, {{ username}}</span>
+            {%endif%}
+        </nav>
+    </header>
+    <main>    
+        <div >
+            {% block content %}{% endblock %}
         </div>
-    </nav>
-
-    <div class="content">
-        {% block content %}{% endblock %}
-    </div>
+    </main>
 
     <footer>
-        <p>&copy; {{ current_year }} Your App Name. All rights reserved.</p>
+        <div class = "bottom-bar">
+            <p>&copy; {{ current_year }} Your App Name. All rights reserved.</p>
+        </div>
     </footer>
 </body>
 
