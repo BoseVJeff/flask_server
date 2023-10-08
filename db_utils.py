@@ -143,14 +143,22 @@ class Db:
         # Cursor returns data in the order they are requested in
         return self.getResults()
 
-    def getUser(self, usernames: List[str]) -> dict[str, str]:
-        """Get details for user having specific username"""
+    # This function accepts a list of names because it is meant to be used in situations like getting a list of friends, etc.
+    def getUser(self, usernames: List[str]) -> dict[str, str] | None:
+        """Get details for user having specific username.
+
+        Returns `None` if no matching entries are found.
+        """
         self.executeManyQuery(
             "SELECT username,email,profile_picture FROM users WHERE username=:userName",
             # Ignoring as this is verified by `mypy`.
             [{"username": x} for x in usernames],  # type: ignore
         )
         rawResult = self.getResults()
+
+        if rawResult == []:
+            return None
+
         formattedResults = {
             "username": rawResult[0],
             "email": rawResult[1],
