@@ -69,11 +69,6 @@ class Db:
                       password TEXT NOT NULL,
                       profile_picture TEXT)"""
         )
-        # Table meant for profile images
-        # self.executeScript(
-        #     "CREATE TABLE IF NOT EXISTS user_essential_content (id INTEGER PRIMARY KEY AUTOINCREMENT, img_path TEXT, blurhash TEXT)"
-        # )
-        self.dbConnection.commit()
         # Taken from https://stackoverflow.com/a/41627098
         atexit.register(self.cleanup)
         return
