@@ -9,7 +9,7 @@ from werkzeug.utils import secure_filename
 import os
 import pathlib
 
-# Buffer size for
+# Buffer size for file IO
 BUF_SIZE = 65536
 
 
