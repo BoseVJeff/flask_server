@@ -54,8 +54,9 @@ class Db:
 
     # This code is very project specific and will need to be modified
     # TODO: Implement a DB migration function for when we inevtably end up changing DB schema
+    # This function relies on the fact that `_connect` and `_setCursor` have been called in `__init__`. Update the function if this not true in the future.
     def dbInit(self):
-        """Creates an empty database. Assumes that `connect` and `setCursor` have already been run.
+        """Creates an empty database.
 
         This will not re-init the database if it already exists. Consider manually deleting it through other means if needed.
         """
