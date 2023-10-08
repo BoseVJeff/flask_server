@@ -12,6 +12,9 @@ import pathlib
 # Buffer size for file IO
 BUF_SIZE = 65536
 
+# Error Icon
+ERROR_ICON_PATH = os.path.join("static", "error.png")
+
 
 class DbType(Enum):
     SQLITE = 1
@@ -159,10 +162,10 @@ class Db:
 
         This function expects the parameters to be dumped in directly from the `request` object returned by a flask server.
         """
-        profile_picture_path = self.upload_image(profile_picture.stream)
         if profile_picture_path is None:
-            # TODO: Have a custom exception class for this
-            raise Exception()
+            profile_picture_path = ERROR_ICON_PATH
+        else:
+            profile_picture_path = self.upload_image(profile_picture.stream)
         self.executeOneQuery(
             "INSERT INTO users (username, email, password, profile_picture) VALUES (:username, :email, :password, :pic_path)",
             {
