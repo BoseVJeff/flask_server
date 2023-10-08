@@ -50,7 +50,14 @@ def is_email_taken(email):
 def index():
     return render_template('login.html', username = "")
 
-@app.route('/home/<username>', methods=['GET', 'POST'])
+# Route exists to be able to debug issues related to data sent/recieved.
+# Feel free to point any api to this endpoint for testing
+@app.route("/echo")
+def echo():
+    return render_template("echo.html", method=request.method)
+
+
+@app.route("/home/<username>", methods=["GET", "POST"])
 def home(username):
     conn = sqlite3.connect(DATABASE)
     cursor = conn.cursor()
