@@ -25,7 +25,7 @@ class UnknownDbTypeException(Exception):
 
 
 # NOTE: Remember to check and throw an exception if `dbConnection` is None
-class db:
+class Db:
     dbConnection: sqlite3.Connection
     dbCursor: sqlite3.Cursor
 
