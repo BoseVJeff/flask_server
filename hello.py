@@ -75,7 +75,7 @@ def home(username):
             "SELECT username FROM users WHERE username LIKE ?", ("%" + query + "%",)
         )
         search_results = [result[0] for result in cursor.fetchall()]
-        conn.close()
+        # conn.close()
 
         return render_template(
             "home.html",
@@ -122,6 +122,12 @@ def signup():
         )
         conn.commit()
         conn.close()
+        # db_obj.createUser(
+        #     username=username,
+        #     password=password,
+        #     profile_picture=profile_picture,
+        #     email=email,
+        # )
 
         return redirect(url_for("home", username=username))
     elif request.method == "GET":
@@ -134,18 +140,18 @@ def login():
         username = request.form["username"]
         password = request.form["password"]
 
-        # conn = sqlite3.connect(DATABASE)
-        # cursor = conn.cursor()
-        # cursor.execute(
-        #     "SELECT * FROM users WHERE username = ? AND password = ?",
-        #     (username, password),
-        # )
-        # user = cursor.fetchone()
-        # conn.close()
-        res = db_obj.validateUser(userName=username, password=password)
+        conn = sqlite3.connect(DATABASE)
+        cursor = conn.cursor()
+        cursor.execute(
+            "SELECT * FROM users WHERE username = ? AND password = ?",
+            (username, password),
+        )
+        user = cursor.fetchone()
+        conn.close()
+        # res = db_obj.validateUser(userName=username, password=password)
 
-        if res is not None:
-            return redirect(url_for("home", username=res.username))
+        if user:
+            return redirect(url_for("home", username=user[1]))
         else:
             error_message = "Invalid username or password"
             return render_template("login.html", error_message=error_message)
@@ -165,6 +171,7 @@ def account(username):
     cursor.execute("SELECT * FROM users WHERE username = ?", (username,))
     user = cursor.fetchone()
     conn.close()
+    # res = db_obj.getUser(usernames=[username])
 
     if user:
         # user[1] is the username, user[2] is the email, user[4] is the profile_picture TODO: Abstraact this into a function
