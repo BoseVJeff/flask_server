@@ -9,7 +9,7 @@
     <h3>password : {{user[3]}}</h3>
     {% if user[4] %}
         <h3>profile photo</h3>
-        <img src="{{ url_for('static', filename='profile_pictures/' + user[4]) }}" alt="Profile Picture">
+        <img src="{{ url_for('static', filename='profile_pictures/' + user[4]) }}" alt="Profile Picture" width="400" height="150">
     {% else %}
         <p>No profile picture</p>
     {% endif %}
