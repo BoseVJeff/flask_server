@@ -178,9 +178,9 @@ class Db:
             return None
         else:
             return {
-                "username": rawResult[0],
-                "email": rawResult[1],
-                "profile_picture": rawResult[2],
+                "username": raw_result[0],
+                "email": raw_result[1],
+                "profile_picture": raw_result[2],
             }
 
     # The file object here is typed in a flask-specific manner. This will not work for other web frameworks.
