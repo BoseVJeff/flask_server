@@ -166,6 +166,23 @@ class Db:
         }
         return formattedResults
 
+    def validateUser(self, userName: str, password: str) -> dict[str, str] | None:
+        """Returns details if combination is valid, `None` otherwise."""
+        self.executeOneQuery(
+            "SELECT (username,email,profile_picture) FROM users WHERE username=:name AND password=:password",
+            {"username": userName, "password": password},
+        )
+        # Get atmost one result
+        raw_result = self.getResults(count=1)
+        if raw_result == []:
+            return None
+        else:
+            return {
+                "username": rawResult[0],
+                "email": rawResult[1],
+                "profile_picture": rawResult[2],
+            }
+
     # The file object here is typed in a flask-specific manner. This will not work for other web frameworks.
     def createUser(
         self, username: str, password: str, email: str, profile_picture: FileStorage
