@@ -134,17 +134,18 @@ def login():
         username = request.form["username"]
         password = request.form["password"]
 
-        conn = sqlite3.connect(DATABASE)
-        cursor = conn.cursor()
-        cursor.execute(
-            "SELECT * FROM users WHERE username = ? AND password = ?",
-            (username, password),
-        )
-        user = cursor.fetchone()
-        conn.close()
+        # conn = sqlite3.connect(DATABASE)
+        # cursor = conn.cursor()
+        # cursor.execute(
+        #     "SELECT * FROM users WHERE username = ? AND password = ?",
+        #     (username, password),
+        # )
+        # user = cursor.fetchone()
+        # conn.close()
+        res = db_obj.validateUser(userName=username, password=password)
 
-        if user:
-            return redirect(url_for("home", username=username))
+        if res is not None:
+            return redirect(url_for("home", username=res.username))
         else:
             error_message = "Invalid username or password"
             return render_template("login.html", error_message=error_message)
