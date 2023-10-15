@@ -9,8 +9,8 @@ app = Flask(__name__, static_url_path="/static", static_folder="static")
 # Database for user info.
 DATABASE_PATH = "users.db"
 
-# TODO: Remove this after transition to `db_obj` is complete
-DATABASE = DATABASE_PATH
+# DONE: Remove this after transition to `db_obj` is complete
+# DATABASE = DATABASE_PATH
 
 # Database object
 db_obj = db_utils.Db(DATABASE_PATH, db_utils.DbType.SQLITE)
@@ -30,23 +30,23 @@ init()
 
 # Add table for posts with cols post_id, message (prob md), likes, poster_id
 
+# Replaced with `db_obj.is<Username/Email>Taken()`.
+# def is_username_taken(username):
+#     conn = sqlite3.connect(DATABASE)
+#     cursor = conn.cursor()
+#     cursor.execute("SELECT * FROM users WHERE username = ?", (username,))
+#     user = cursor.fetchone()
+#     conn.close()
+#     return user is not None
 
-def is_username_taken(username):
-    conn = sqlite3.connect(DATABASE)
-    cursor = conn.cursor()
-    cursor.execute("SELECT * FROM users WHERE username = ?", (username,))
-    user = cursor.fetchone()
-    conn.close()
-    return user is not None
 
-
-def is_email_taken(email):
-    conn = sqlite3.connect(DATABASE)
-    cursor = conn.cursor()
-    cursor.execute("SELECT * FROM users WHERE email = ?", (email,))
-    user = cursor.fetchone()
-    conn.close()
-    return user is not None
+# def is_email_taken(email):
+#     conn = sqlite3.connect(DATABASE)
+#     cursor = conn.cursor()
+#     cursor.execute("SELECT * FROM users WHERE email = ?", (email,))
+#     user = cursor.fetchone()
+#     conn.close()
+#     return user is not None
 
 
 @app.route("/")
@@ -63,31 +63,18 @@ def echo():
 
 @app.route("/home/<username>", methods=["GET", "POST"])
 def home(username):
-    conn = sqlite3.connect(DATABASE)
-    cursor = conn.cursor()
-    cursor.execute("SELECT * FROM users WHERE username = ?", (username,))
-    user = cursor.fetchone()
+    # conn = sqlite3.connect(DATABASE)
+    # cursor = conn.cursor()
+    # cursor.execute("SELECT * FROM users WHERE username = ?", (username,))
+    # user = cursor.fetchone()
+    user = db_obj.getUser(username)
 
-    if request.method == "POST":
-        query = request.form["search_query"]
-
-        cursor.execute(
-            "SELECT username FROM users WHERE username LIKE ?", ("%" + query + "%",)
-        )
-        search_results = [result[0] for result in cursor.fetchall()]
-        # conn.close()
-
+    if user is not None:
         return render_template(
             "home.html",
-            username=username,
-            profile_picture=user[4],
-            search_results=search_results,
+            username=user["username"],
+            profile_picture=user["profile_picture"],
         )
-
-    conn.close()
-
-    if user:
-        return render_template("home.html", username=user[1], profile_picture=user[4])
     else:
         # Handle user not found
         error_message = "User not found"
@@ -103,25 +90,32 @@ def signup():
         password = request.form["password"]
 
         profile_picture = request.files["profile_picture"]
-        if profile_picture:
-            profile_picture_filename = secure_filename(profile_picture.filename)
-            if not os.path.exists("static/profile_pictures"):
-                os.mkdir("static/profile_pictures")
-            profile_picture_path = os.path.join(
-                "static/profile_pictures", profile_picture_filename
-            )
-            profile_picture.save(profile_picture_path)
-        else:
-            profile_picture_filename = None
-
-        conn = sqlite3.connect(DATABASE)
-        cursor = conn.cursor()
-        cursor.execute(
-            "INSERT INTO users (username, email, password, profile_picture) VALUES (?, ?, ?, ?)",
-            (username, email, password, profile_picture_filename),
+        print(type(profile_picture))
+        db_obj.createUser(
+            username=username,
+            password=password,
+            email=email,
+            profile_picture=profile_picture,
         )
-        conn.commit()
-        conn.close()
+        # if profile_picture:
+        #     profile_picture_filename = secure_filename(profile_picture.filename)
+        #     if not os.path.exists("static/profile_pictures"):
+        #         os.mkdir("static/profile_pictures")
+        #     profile_picture_path = os.path.join(
+        #         "static/profile_pictures", profile_picture_filename
+        #     )
+        #     profile_picture.save(profile_picture_path)
+        # else:
+        #     profile_picture_filename = None
+
+        # conn = sqlite3.connect(DATABASE)
+        # cursor = conn.cursor()
+        # cursor.execute(
+        #     "INSERT INTO users (username, email, password, profile_picture) VALUES (?, ?, ?, ?)",
+        #     (username, email, password, profile_picture_filename),
+        # )
+        # conn.commit()
+        # conn.close()
         # db_obj.createUser(
         #     username=username,
         #     password=password,
@@ -140,18 +134,10 @@ def login():
         username = request.form["username"]
         password = request.form["password"]
 
-        conn = sqlite3.connect(DATABASE)
-        cursor = conn.cursor()
-        cursor.execute(
-            "SELECT * FROM users WHERE username = ? AND password = ?",
-            (username, password),
-        )
-        user = cursor.fetchone()
-        conn.close()
-        # res = db_obj.validateUser(userName=username, password=password)
+        user = db_obj.validateUser(userName=username, password=password)
 
-        if user:
-            return redirect(url_for("home", username=user[1]))
+        if user is not None:
+            return redirect(url_for("home", username=user["username"]))
         else:
             error_message = "Invalid username or password"
             return render_template("login.html", error_message=error_message)
@@ -166,17 +152,20 @@ def logout():
 
 @app.route("/account/<username>")
 def account(username):
-    conn = sqlite3.connect(DATABASE)
-    cursor = conn.cursor()
-    cursor.execute("SELECT * FROM users WHERE username = ?", (username,))
-    user = cursor.fetchone()
-    conn.close()
-    # res = db_obj.getUser(usernames=[username])
+    # conn = sqlite3.connect(DATABASE)
+    # cursor = conn.cursor()
+    # cursor.execute("SELECT * FROM users WHERE username = ?", (username,))
+    # user = cursor.fetchone()
+    # conn.close()
+    res = db_obj.getUser(username=username)
 
-    if user:
+    if res is not None:
         # user[1] is the username, user[2] is the email, user[4] is the profile_picture TODO: Abstraact this into a function
         return render_template(
-            "account.html", username=user[1], email=user[2], profile_picture=user[4]
+            "account.html",
+            username=res["username"],
+            email=res["email"],
+            profile_picture=res["profile_picture"],
         )
     else:
         # Handle user not found
@@ -194,35 +183,40 @@ def change_password(username):
     old_password = request.form["old_password"]
     new_password = request.form["new_password"]
 
-    conn = sqlite3.connect(DATABASE)
-    cursor = conn.cursor()
-    cursor.execute(
-        "SELECT * FROM users WHERE username = ? AND password = ?",
-        (username, old_password),
+    # conn = sqlite3.connect(DATABASE)
+    # cursor = conn.cursor()
+    # cursor.execute(
+    #     "SELECT * FROM users WHERE username = ? AND password = ?",
+    #     (username, old_password),
+    # )
+    # user = cursor.fetchone()
+    res = db_obj.updatePassword(
+        username=username, oldPassword=old_password, newPassword=new_password
     )
-    user = cursor.fetchone()
+    res1 = db_obj.getUser(username)
 
-    if user:
-        cursor.execute(
-            "UPDATE users SET password = ? WHERE username = ?", (new_password, username)
-        )
-        conn.commit()
-        conn.close()
+    if res:
+        # cursor.execute(
+        #     "UPDATE users SET password = ? WHERE username = ?", (new_password, username)
+        # )
+        # conn.commit()
+        # conn.close()
         success_message = "Password changed successfully"
         return render_template(
             "account.html",
-            username=username,
-            email=user[2],
-            profile_picture=user[4],
+            username=res1["username"],
+            email=res1["email"],
+            profile_picture=res1["profile_picture"],
             success_message=success_message,
         )
     else:
-        conn.close()
+        # conn.close()
         error_message = "Incorrect old password"
         return render_template(
             "account.html",
-            username=username,
-            email=user[2],
+            username=res1["username"],
+            email=res1["email"],
+            profile_picture=res1["profile_picture"],
             error_message=error_message,
         )
 
@@ -235,32 +229,35 @@ def upload_profile_picture_page(username):
 @app.route("/upload_profile_picture/<username>", methods=["POST"])
 def upload_profile_picture(username):
     profile_picture = request.files["profile_picture"]
-    if profile_picture:
-        profile_picture_filename = secure_filename(profile_picture.filename)
-        profile_picture_path = os.path.join(
-            "static/profile_pictures", profile_picture_filename
-        )
-        profile_picture.save(profile_picture_path)
 
-        conn = sqlite3.connect(DATABASE)
-        cursor = conn.cursor()
-        cursor.execute(
-            "UPDATE users SET profile_picture = ? WHERE username = ?",
-            (profile_picture_filename, username),
-        )
-        conn.commit()
-        conn.close()
+    db_obj.updatePicture(username=username, new_profile_picture=profile_picture)
+    # if profile_picture:
+    #     profile_picture_filename = secure_filename(profile_picture.filename)
+    #     profile_picture_path = os.path.join(
+    #         "static/profile_pictures", profile_picture_filename
+    #     )
+    #     profile_picture.save(profile_picture_path)
+
+    #     conn = sqlite3.connect(DATABASE)
+    #     cursor = conn.cursor()
+    #     cursor.execute(
+    #         "UPDATE users SET profile_picture = ? WHERE username = ?",
+    #         (profile_picture_filename, username),
+    #     )
+    #     conn.commit()
+    #     conn.close()
 
     return redirect(url_for("account", username=username))
 
 
 @app.route("/delete_account/<username>")
 def delete_account(username):
-    conn = sqlite3.connect(DATABASE)
-    cursor = conn.cursor()
-    cursor.execute("DELETE FROM users WHERE username = ?", (username,))
-    conn.commit()
-    conn.close()
+    # conn = sqlite3.connect(DATABASE)
+    # cursor = conn.cursor()
+    # cursor.execute("DELETE FROM users WHERE username = ?", (username,))
+    # conn.commit()
+    # conn.close()
+    db_obj.deleteUser(username=username)
 
     # Redirect to a page indicating successful account deletion
     return redirect(url_for("account_deleted"))
@@ -273,11 +270,12 @@ def account_deleted():
 
 @app.route("/users-data-all")
 def get_dict():
-    conn = sqlite3.connect("users.db")
-    curror = conn.cursor()
-    curror.execute("SELECT * FROM users")
-    data = curror.fetchall()
-    return render_template("list.html", data=data, username="")
+    # conn = sqlite3.connect("users.db")
+    # curror = conn.cursor()
+    # curror.execute("SELECT * FROM users")
+    # data = curror.fetchall()
+    res = db_obj.dumpUsers()
+    return render_template("list.html", data=res, username="")
 
 
 if __name__ == "__main__":

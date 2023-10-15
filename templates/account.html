@@ -13,7 +13,7 @@ Account Details
 <div class="account-container">
     <div class="profile-picture">
         {% if profile_picture %}
-            <img src="{{ url_for('static', filename='profile_pictures/' + profile_picture) }}" alt="Profile Picture">
+            <img src="/{{profile_picture}}" alt="Profile Picture">
         {% else %}
             <p>No profile picture</p>
         {% endif %}
