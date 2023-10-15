@@ -1,6 +1,7 @@
 flask_session/2029240f6d1128be89ddc32729463129
 flask_session/f8eecc52fdcc814cad7df6d87a815131
 static/profile_pictures/
+static/images/
 users.db
 __pycache__
 .vscode
