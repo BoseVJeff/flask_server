@@ -367,7 +367,9 @@ class Db:
         Note that this removes the original file from disk.
         """
         profile_picture = image
-        if profile_picture.filename is None:
+        if profile_picture is None:
+            return None
+        if (profile_picture.filename is None) or (profile_picture.filename == ""):
             return None
         imgExt = profile_picture.filename.rsplit(".", 1)[1].lower()
         md5 = hashlib.md5()
