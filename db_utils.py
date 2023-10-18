@@ -14,7 +14,7 @@ import typing
 BUF_SIZE = 65536
 
 # Error Icon
-ERROR_ICON_PATH = os.path.join("static", "error.png")
+ERROR_ICON_PATH = "/".join(["static", "error.png"])
 
 # Folder inside `static` for images
 IMAGE_FOLDER = "images"
