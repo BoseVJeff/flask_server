@@ -117,8 +117,15 @@ class Db:
         For docs on dicts, see [docs here](https://docs.python.org/3/library/stdtypes.html#dict).
         """
         (dbConnection, dbCursor) = self._getDb()
-        dbCursor.execute(sql, parameters)
-        dbConnection.commit()
+        try:
+            dbCursor.execute(sql, parameters)
+            dbConnection.commit()
+        except:
+            # The expected useage pattern for this function is `(dbConn, dbCursor) = self.executeOneQuery()`.
+            # This does not yield itself to the function being able to clean up wasily if an error occours at this stage of the process.
+            # Therefore, this function takes it upon itself to close its connection.
+            # Commiting changes is avoided here as a broken query is assumed to have no changes that are left to commit.
+            dbConnection.close()
 
         return (dbConnection, dbCursor)
 
@@ -135,15 +142,29 @@ class Db:
         For docs on dicts, see [docs here](https://docs.python.org/3/library/stdtypes.html#dict).
         """
         (dbConnection, dbCursor) = self._getDb()
-        dbCursor.executemany(sql, parameters)
-        dbConnection.commit()
+        try:
+            dbCursor.executemany(sql, parameters)
+            dbConnection.commit()
+        except:
+            # The expected useage pattern for this function is `(dbConn, dbCursor) = self.executeManyQuery()`.
+            # This does not yield itself to the function being able to clean up wasily if an error occours at this stage of the process.
+            # Therefore, this function takes it upon itself to close its connection.
+            # Commiting changes is avoided here as a broken query is assumed to have no changes that are left to commit.
+            dbConnection.close()
         return (dbConnection, dbCursor)
 
     def executeScript(self, sql_script: str) -> tuple[Connection, Cursor]:
         """Execute SQL statements in sql_script. Returns a handle to the cursor that was used to execute the query."""
         (dbConnection, dbCursor) = self._getDb()
-        dbCursor.execute(sql_script)
-        dbConnection.commit()
+        try:
+            dbCursor.execute(sql_script)
+            dbConnection.commit()
+        except:
+            # The expected useage pattern for this function is `(dbConn, dbCursor) = self.executeScript()`.
+            # This does not yield itself to the function being able to clean up wasily if an error occours at this stage of the process.
+            # Therefore, this function takes it upon itself to close its connection.
+            # Commiting changes is avoided here as a broken query is assumed to have no changes that are left to commit.
+            dbConnection.close()
         return (dbConnection, dbCursor)
 
     def getResults(self, dbCursor: Cursor, count: int | None = None) -> list[Any]:
