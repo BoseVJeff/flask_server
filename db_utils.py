@@ -293,8 +293,12 @@ class Db:
         # else:
         #     profile_picture_path = profile_picture_path_tmp
         # profile_picture_path = ERROR_ICON_PATH
-        if (profile_picture is None) or (profile_picture.filename is None):
-            profile_picture_path = None
+        if (
+            (profile_picture is None)
+            or (profile_picture.filename is None)
+            or (profile_picture.filename == "")
+        ):
+            profile_picture_path = ERROR_ICON_PATH
         else:
             profile_picture_path = self.upload_image(profile_picture)
             # imgExt = profile_picture.filename.rsplit(".", 1)[1].lower()
