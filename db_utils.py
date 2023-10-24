@@ -126,6 +126,7 @@ class Db:
             # Therefore, this function takes it upon itself to close its connection.
             # Commiting changes is avoided here as a broken query is assumed to have no changes that are left to commit.
             dbConnection.close()
+            raise
 
         return (dbConnection, dbCursor)
 
