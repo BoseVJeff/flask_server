@@ -7,3 +7,4 @@ __pycache__
 .vscode
 # `venv` for Vineet's system
 nuv
+mysql_config.py

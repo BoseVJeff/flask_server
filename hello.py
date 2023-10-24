@@ -14,6 +14,7 @@ DATABASE_PATH = "users.db"
 
 # Database object
 db_obj = db_utils.Db(DATABASE_PATH, db_utils.DbType.SQLITE)
+# db_obj = db_utils.Db(DATABASE_PATH, db_utils.DbType.MYSQL)
 
 
 def init() -> None:
@@ -195,7 +196,7 @@ def change_password(username):
     )
     res1 = db_obj.getUser(username)
 
-    if res:
+    if res is not None:
         # cursor.execute(
         #     "UPDATE users SET password = ? WHERE username = ?", (new_password, username)
         # )

@@ -1,14 +1,19 @@
 import hashlib
 import sqlite3
+import mysql.connector
+import mysql
 from enum import Enum
 import atexit
-from typing import IO, Any, BinaryIO, List, Iterable
+from typing import IO, Any, BinaryIO, List, Iterable, Sequence
 import math
 from werkzeug.datastructures import FileStorage
 from werkzeug.utils import secure_filename
 import os
 import pathlib
 import typing
+
+import mysql_config
+
 
 # Buffer size for file IO
 BUF_SIZE = 65536
@@ -20,12 +25,33 @@ ERROR_ICON_PATH = "/".join(["static", "error.png"])
 IMAGE_FOLDER = "images"
 
 # Type Aliases for typing covenience
-Connection: typing.TypeAlias = sqlite3.Connection
-Cursor: typing.TypeAlias = sqlite3.Cursor
+Connection: typing.TypeAlias = (
+    sqlite3.Connection
+    | mysql.connector.pooling.PooledMySQLConnection
+    | mysql.connector.MySQLConnection
+    | mysql.connector.CMySQLConnection
+)
+Cursor: typing.TypeAlias = sqlite3.Cursor | mysql.connector.cursor.MySQLCursor
+
+# The default host and ports for a local MySQL install can be obtained by running `SHOW VARIABLES WHERE Variable_name in ('port','hostname');` in the MySQL terminal.
+# In MySQL workbench, accounts using this default hostname have the value of host matching set to `%`.
+
+# These values are stored in a seperate file as the values are going to be different for everyone involved.
+# Values are expected to be switched by changing the appropriate import. Default values point to a `pythonanywhere.com` instance on my (BoseV's) account.
 
 
 class DbType(Enum):
     SQLITE = 1
+    MYSQL = 2
+
+
+def sqlParam(param: str, style: DbType):
+    match style:
+        case DbType.MYSQL:
+            # Assuming all types are strings
+            return f"%({param})s"
+        case DbType.SQLITE:
+            return f":{param}"
 
 
 # Code taken from https://stackoverflow.com/a/1319675
@@ -44,20 +70,39 @@ class Db:
     dbLocation: str
     dbType: DbType
 
-    def _connect(self):
+    def _connect(
+        self,
+    ) -> Connection:
         """Function to connect this class to a database.
 
         This function must be called first before using any other action.
         """
+        # For MySQL on pythonanywhere.com
+        # cnx=mysql.connector.connect(user="BoseV",password="mysqlpython", host="BoseV.mysql.pythonanywhere-services.com",port=3306, database="BoseV$test")
+        # cnx=mysql.connector.connect(user='admin',password='admin',host='DESKTOP-8Q49TBD',port=3305,database='test')
+        # cnx=mysql.connector.connect(user='test',password='test',host='localhost',port=3305,database='test')
         match self.dbType:
             case DbType.SQLITE:
                 return sqlite3.connect(self.dbLocation)
+            case DbType.MYSQL:
+                return mysql.connector.connect(
+                    user=mysql_config.USERNAME,
+                    password=mysql_config.PASSWORD,
+                    host=mysql_config.HOSTNAME,
+                    port=mysql_config.PORTNUMBER,
+                    database=mysql_config.DATABASE,
+                )
             case _:
                 raise UnknownDbTypeException(message=f"Unknown DbType {self.dbType}")
 
-    def _getCursor(self, dbConnection):
+    def _getCursor(self, dbConnection) -> Cursor:
         "This initialises the cursor for any future operations on the database."
-        return dbConnection.cursor()
+        if self.dbType == DbType.MYSQL:
+            # https://stackoverflow.com/a/33632767
+            return dbConnection.cursor(buffered=True)
+        else:
+            return dbConnection.cursor()
+        # return dbConnection.cursor()
 
     def __init__(self, dbLocation, dbType: DbType = DbType.SQLITE):
         """Initialise the database.
@@ -81,14 +126,33 @@ class Db:
         This will not re-init the database if it already exists. Consider manually deleting it through other means if needed.
         """
         # Table for user data
-        self.executeScript(
-            """CREATE TABLE IF NOT EXISTS users
-                      (id INTEGER PRIMARY KEY AUTOINCREMENT,
-                      username TEXT NOT NULL,
-                      email TEXT NOT NULL,
-                      password TEXT NOT NULL,
-                      profile_picture TEXT)"""
-        )
+        if self.dbType == DbType.MYSQL:
+            self.executeScript(
+                """CREATE TABLE IF NOT EXISTS users
+                        (id INTEGER PRIMARY KEY AUTO_INCREMENT,
+                        username TEXT NOT NULL,
+                        email TEXT NOT NULL,
+                        password TEXT NOT NULL,
+                        profile_picture TEXT)"""
+            )
+        else:
+            self.executeScript(
+                """CREATE TABLE IF NOT EXISTS users
+                        (id INTEGER PRIMARY KEY AUTOINCREMENT,
+                        username TEXT NOT NULL,
+                        email TEXT NOT NULL,
+                        password TEXT NOT NULL,
+                        profile_picture TEXT)"""
+            )
+        # self.executeScript(
+        #     """
+        # CREATE TABLE IF NOT EXISTS posts
+        # (id INTEGER PRIMARY KEY AUTOINCREMENT,
+        # author INTEGER REFERENCES users(id),
+        # content TEXT,
+        # created_at INTEGER DEFAULT CURRENT_TIMESTAMP NOT NULL)
+        # """
+        # )
         # Taken from https://stackoverflow.com/a/41627098
         # No longer needed as we no longer mantain a global connection for all requests.
         # atexit.register(self.cleanup)
@@ -98,6 +162,9 @@ class Db:
     #     self.dbConnection.commit()
     #     self.dbConnection.close()
     #     return
+
+    # def createPost(self, postData: str, postAuthor: str):
+    #     (dbConn, dbCursor) = self.executeOneQuery("")
 
     def _getDb(self) -> tuple[Connection, Cursor]:
         conn = self._connect()
@@ -144,7 +211,8 @@ class Db:
         """
         (dbConnection, dbCursor) = self._getDb()
         try:
-            dbCursor.executemany(sql, parameters)
+            # Ignoring here as this is verified to tho be safe by mypy
+            dbCursor.executemany(sql, parameters)  # type: ignore
             dbConnection.commit()
         except:
             # The expected useage pattern for this function is `(dbConn, dbCursor) = self.executeManyQuery()`.
@@ -174,16 +242,17 @@ class Db:
         If `count` is not defined, all rows are returned.
         """
         res: list[Any]
+        tmp: Any
         if count is None:
             res = dbCursor.fetchall()
         elif count == 0:
             res = []
         elif count == 1:
-            res = dbCursor.fetchone()
-            if res is None:
+            tmp = dbCursor.fetchone()
+            if tmp is None:
                 res = []
             else:
-                res = [res]
+                res = [tmp]
         else:
             res = dbCursor.fetchmany(size=count)
         return res
@@ -210,7 +279,8 @@ class Db:
         This searches one user only as `executeManyQuery` can only execute DML queries.
         """
         (dbConn, dbCursor) = self.executeOneQuery(
-            "SELECT username,email,profile_picture FROM users WHERE username=:username",
+            # "SELECT username,email,profile_picture FROM users WHERE username=:username",
+            f"SELECT username,email,profile_picture FROM users WHERE username={sqlParam('username',self.dbType)}",
             {"username": username},
         )
         rawResult = self.getResults(dbCursor)[0]
@@ -229,7 +299,7 @@ class Db:
 
     def isUsernameTaken(self, username: str) -> bool:
         (dbConn, dbCursor) = self.executeOneQuery(
-            "SELECT 1 FROM users WHERE username=:name",
+            f"SELECT 1 FROM users WHERE username={sqlParam('name',self.dbType)}",
             {
                 "name": username,
             },
@@ -243,7 +313,7 @@ class Db:
 
     def isEmailTaken(self, email: str) -> bool:
         (dbConn, dbCursor) = self.executeOneQuery(
-            "SELECT 1 FROM users WHERE email=:email",
+            f"SELECT 1 FROM users WHERE email={sqlParam('email',self.dbType)}",
             {
                 "email": email,
             },
@@ -258,7 +328,8 @@ class Db:
     def validateUser(self, userName: str, password: str) -> dict[str, str] | None:
         """Returns details if combination is valid, `None` otherwise."""
         (dbConn, dbCursor) = self.executeOneQuery(
-            "SELECT username,email,profile_picture FROM users WHERE username=:name AND password=:password",
+            # "SELECT username,email,profile_picture FROM users WHERE username=:name AND password=:password",
+            f"SELECT username,email,profile_picture FROM users WHERE username={sqlParam('name',self.dbType)} AND password={sqlParam('password',self.dbType)}",
             {"name": userName, "password": password},
         )
         # Get atmost one result
@@ -323,7 +394,7 @@ class Db:
             #     f.write(imgStream.read())
             # # profile_picture.save(profile_picture_path)
         (dbConn, dbCursor) = self.executeOneQuery(
-            "INSERT INTO users (username, email, password, profile_picture) VALUES (:username, :email, :password, :pic_path)",
+            f"INSERT INTO users (username, email, password, profile_picture) VALUES ({sqlParam('username',self.dbType)}, {sqlParam('email',self.dbType)}, {sqlParam('password',self.dbType)}, {sqlParam('pic_path',self.dbType)})",
             {
                 "username": username,
                 "email": email,
@@ -335,7 +406,7 @@ class Db:
 
     def deleteUser(self, username: str) -> bool:
         (dbConn, dbCursor) = self.executeOneQuery(
-            "DELETE FROM users WHERE username = :name",
+            f"DELETE FROM users WHERE username = {sqlParam('name',self.dbType)}",
             {
                 "name": username,
             },
@@ -349,7 +420,7 @@ class Db:
             return False
         else:
             (dbConn, dbCursor) = self.executeOneQuery(
-                "UPDATE users SET password = :password WHERE username = :username",
+                f"UPDATE users SET password = {sqlParam('password',self.dbType)} WHERE username = {sqlParam('username',self.dbType)}",
                 {
                     "username": username,
                     "password": newPassword,
@@ -363,7 +434,7 @@ class Db:
         if new_pic_path is None:
             return False
         (dbConn, dbCursor) = self.executeOneQuery(
-            "UPDATE users SET profile_picture = :pic WHERE username = :name",
+            f"UPDATE users SET profile_picture = {sqlParam('pic',self.dbType)} WHERE username = {sqlParam('name',self.dbType)}",
             {
                 "name": username,
                 "pic": new_pic_path,
