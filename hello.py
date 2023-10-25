@@ -1,10 +1,11 @@
-from flask import Flask, render_template, request, redirect, url_for
+from flask import Flask, render_template, request, redirect, url_for, session
 import sqlite3, os
 from werkzeug.utils import secure_filename
 
 import db_utils
 
 app = Flask(__name__, static_url_path="/static", static_folder="static")
+app.secret_key = b'_5#yswq2L"F4Q8z\n\xec]/'
 
 # Database for user info.
 DATABASE_PATH = "users.db"
@@ -138,6 +139,9 @@ def login():
         user = db_obj.validateUser(userName=username, password=password)
 
         if user is not None:
+            session["userid"] = user["id"]
+            # print(session.keys())
+            # print(session.items())
             return redirect(url_for("home", username=user["username"]))
         else:
             error_message = "Invalid username or password"
@@ -148,6 +152,9 @@ def login():
 
 @app.route("/logout")
 def logout():
+    session.pop("userid", None)
+    # print(session.keys())
+    # print(session.items())
     return redirect(url_for("login"))
 
 

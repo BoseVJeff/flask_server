@@ -329,7 +329,7 @@ class Db:
         """Returns details if combination is valid, `None` otherwise."""
         (dbConn, dbCursor) = self.executeOneQuery(
             # "SELECT username,email,profile_picture FROM users WHERE username=:name AND password=:password",
-            f"SELECT username,email,profile_picture FROM users WHERE username={sqlParam('name',self.dbType)} AND password={sqlParam('password',self.dbType)}",
+            f"SELECT username,email,profile_picture,id FROM users WHERE username={sqlParam('name',self.dbType)} AND password={sqlParam('password',self.dbType)}",
             {"name": userName, "password": password},
         )
         # Get atmost one result
@@ -344,6 +344,7 @@ class Db:
                 "username": raw_result[0],
                 "email": raw_result[1],
                 "profile_picture": raw_result[2],
+                "id": raw_result[3],
             }
 
     # The file object here is typed in a flask-specific manner. This will not work for other web frameworks.
