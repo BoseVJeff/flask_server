@@ -129,6 +129,15 @@ class Db:
                         password TEXT NOT NULL,
                         profile_picture TEXT)"""
             )
+            self.executeScript(
+                """CREATE TABLE IF NOT EXISTS posts(
+                    id INTEGER PRIMARY KEY AUTO_INCREMENT,
+                    author INTEGER REFERENCES users(id),
+                    content TEXT,created_at INTEGER DEFAULT CURRENT_TIMESTAMP NOT NULL,
+                    parent_id INTEGER REFERENCES posts(id),
+                    root_id INTEGER REFERENCES posts(id)
+                    )"""
+            )
         else:
             self.executeScript(
                 """CREATE TABLE IF NOT EXISTS users
@@ -138,15 +147,15 @@ class Db:
                         password TEXT NOT NULL,
                         profile_picture TEXT)"""
             )
-        # self.executeScript(
-        #     """
-        # CREATE TABLE IF NOT EXISTS posts
-        # (id INTEGER PRIMARY KEY AUTOINCREMENT,
-        # author INTEGER REFERENCES users(id),
-        # content TEXT,
-        # created_at INTEGER DEFAULT CURRENT_TIMESTAMP NOT NULL)
-        # """
-        # )
+            self.executeScript(
+                """CREATE TABLE IF NOT EXISTS posts(
+                    id INTEGER PRIMARY KEY AUTOINCREMENT,
+                    author INTEGER REFERENCES users(id),
+                    content TEXT,created_at INTEGER DEFAULT CURRENT_TIMESTAMP NOT NULL,
+                    parent_id INTEGER REFERENCES posts(id),
+                    root_id INTEGER REFERENCES posts(id)
+                    )"""
+            )
         # Taken from https://stackoverflow.com/a/41627098
         # No longer needed as we no longer mantain a global connection for all requests.
         # atexit.register(self.cleanup)
@@ -221,6 +230,24 @@ class Db:
             # Commiting changes is avoided here as a broken query is assumed to have no changes that are left to commit.
             dbConnection.close()
         return (dbConnection, dbCursor)
+
+    def createPost(
+        self,
+        user_id: int,
+        content: str,
+        parent_id: int | None = None,
+        root_id: int | None = None,
+    ):
+        (dbConn, dbCursor) = self.executeOneQuery(
+            f"INSERT INTO posts (author, content, parent_id, root_id) VALUES ({sqlParam('authorId',self.dbType)}, {sqlParam('content',self.dbType)}, {sqlParam('parentId',self.dbType)}, {sqlParam('postId',self.dbType)})",
+            {
+                "authorId": str(user_id),
+                "content": content,
+                "parentId": str(parent_id),
+                "rootId": str(root_id),
+            },
+        )
+        dbConn.close()
 
     def getResults(self, dbCursor: Cursor, count: int | None = None) -> list[Any]:
         """Returns `count` number of results from the supplied cursor.

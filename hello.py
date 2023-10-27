@@ -246,6 +246,14 @@ def account_deleted():
     return redirect("/")
 
 
+@app.route("/post"):
+def create_post():
+    if request.method=="GET":
+        return render_template("test.html")
+    else:
+        db_obj.createPost(session['userid'],)
+
+
 @app.route("/users-data-all")
 def get_dict():
     res = db_obj.dumpUsers()
