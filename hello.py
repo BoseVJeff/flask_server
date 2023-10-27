@@ -246,12 +246,9 @@ def account_deleted():
     return redirect("/")
 
 
-@app.route("/post"):
+@app.route("/post")
 def create_post():
-    if request.method=="GET":
-        return render_template("test.html")
-    else:
-        db_obj.createPost(session['userid'],)
+    return render_template("test.html")
 
 
 @app.route("/users-data-all")
