@@ -11,9 +11,16 @@ Login
 
 {% block content %}
 <h1>Login</h1>
-{% if error_message %}
-<p>{{ error_message }}</p>
+{% with messages = get_flashed_messages(with_categories=true) %}
+{% if messages %}
+{% for category, message in messages %}
+<!-- Default category is message! -->
+<p class="{{category}}">
+    {{message}}
+</p>
+{% endfor %}
 {% endif %}
+{% endwith %}
 <form action="/login" method="post">
     <label for="username">Username:</label>
     <input type="text" id="username" name="username" required><br>

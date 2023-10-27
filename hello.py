@@ -1,4 +1,4 @@
-from flask import Flask, render_template, request, redirect, url_for, session
+from flask import Flask, flash, render_template, request, redirect, url_for, session
 import sqlite3, os
 from werkzeug.utils import secure_filename
 
@@ -53,7 +53,10 @@ init()
 
 @app.route("/")
 def index():
-    return render_template("login.html", username="")
+    print(session.keys())
+    if ("userid" in session) or ("username" in session):
+        return redirect(f'/home/{session["username"]}')
+    return redirect("/login")
 
 
 # Route exists to be able to debug issues related to data sent/recieved.
@@ -69,6 +72,14 @@ def home(username):
     # cursor = conn.cursor()
     # cursor.execute("SELECT * FROM users WHERE username = ?", (username,))
     # user = cursor.fetchone()
+    print(session.keys())
+    if ("userid" not in session) or ("username" not in session):
+        # Not logged in
+        return redirect("/login")
+    else:
+        if session["username"] != username:
+            # logged in as a different user
+            return redirect("/login")
     user = db_obj.getUser(username)
 
     if user is not None:
@@ -128,6 +139,8 @@ def signup():
         return redirect(url_for("home", username=username))
     elif request.method == "GET":
         return render_template("signup.html", username="")
+    else:
+        return render_template("signup.html", username="")
 
 
 @app.route("/login", methods=["GET", "POST"])
@@ -140,12 +153,15 @@ def login():
 
         if user is not None:
             session["userid"] = user["id"]
+            session["username"] = user["username"]
             # print(session.keys())
             # print(session.items())
             return redirect(url_for("home", username=user["username"]))
         else:
             error_message = "Invalid username or password"
-            return render_template("login.html", error_message=error_message)
+            flash(error_message, "error")
+            print("Flashing message...")
+            return redirect("/login")
 
     return render_template("login.html", username="")
 
@@ -153,8 +169,10 @@ def login():
 @app.route("/logout")
 def logout():
     session.pop("userid", None)
+    session.pop("username", None)
     # print(session.keys())
     # print(session.items())
+    flash("You have been successfully logged out!", "success")
     return redirect(url_for("login"))
 
 
@@ -165,6 +183,13 @@ def account(username):
     # cursor.execute("SELECT * FROM users WHERE username = ?", (username,))
     # user = cursor.fetchone()
     # conn.close()
+    if ("userid" not in session) or ("username" not in session):
+        # Not logged in
+        return redirect("/login")
+    else:
+        if session["username"] != username:
+            # logged in as a different user
+            return redirect("/login")
     res = db_obj.getUser(username=username)
 
     if res is not None:
@@ -183,6 +208,13 @@ def account(username):
 
 @app.route("/change_password/<username>")
 def change_password_page(username):
+    if ("userid" not in session) or ("username" not in session):
+        # Not logged in
+        return redirect("/login")
+    else:
+        if session["username"] != username:
+            # logged in as a different user
+            return redirect("/login")
     return render_template("change_password.html", username=username)
 
 
@@ -198,10 +230,20 @@ def change_password(username):
     #     (username, old_password),
     # )
     # user = cursor.fetchone()
+    if ("userid" not in session) or ("username" not in session):
+        # Not logged in
+        return redirect("/login")
+    else:
+        if session["username"] != username:
+            # logged in as a different user
+            return redirect("/login")
     res = db_obj.updatePassword(
         username=username, oldPassword=old_password, newPassword=new_password
     )
     res1 = db_obj.getUser(username)
+
+    if res1 is None:
+        return redirect("/")
 
     if res is not None:
         # cursor.execute(
@@ -231,11 +273,25 @@ def change_password(username):
 
 @app.route("/upload_profile_picture/<username>")
 def upload_profile_picture_page(username):
+    if ("userid" not in session) or ("username" not in session):
+        # Not logged in
+        return redirect("/login")
+    else:
+        if session["username"] != username:
+            # logged in as a different user
+            return redirect("/login")
     return render_template("upload_profile_picture.html", username=username)
 
 
 @app.route("/upload_profile_picture/<username>", methods=["POST"])
 def upload_profile_picture(username):
+    if ("userid" not in session) or ("username" not in session):
+        # Not logged in
+        return redirect("/login")
+    else:
+        if session["username"] != username:
+            # logged in as a different user
+            return redirect("/login")
     profile_picture = request.files["profile_picture"]
 
     db_obj.updatePicture(username=username, new_profile_picture=profile_picture)
@@ -265,6 +321,13 @@ def delete_account(username):
     # cursor.execute("DELETE FROM users WHERE username = ?", (username,))
     # conn.commit()
     # conn.close()
+    if ("userid" not in session) or ("username" not in session):
+        # Not logged in
+        return redirect("/login")
+    else:
+        if session["username"] != username:
+            # logged in as a different user
+            return redirect("/login")
     db_obj.deleteUser(username=username)
 
     # Redirect to a page indicating successful account deletion
@@ -273,7 +336,8 @@ def delete_account(username):
 
 @app.route("/account_deleted")
 def account_deleted():
-    return "Your account has been deleted successfully."
+    # return "Your account has been deleted successfully."
+    return redirect("/")
 
 
 @app.route("/users-data-all")
