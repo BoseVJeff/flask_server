@@ -9,4 +9,4 @@ HOSTNAME = f"{_accountUsername}.mysql.pythonanywhere-services.com"
 PORTNUMBER = 3306
 USERNAME = _accountUsername
 PASSWORD = _dbPassword
-DATABASE = _dbName
+DATABASE = f"{_accountUsername}${_dbName}"
