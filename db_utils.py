@@ -77,10 +77,6 @@ class Db:
 
         This function must be called first before using any other action.
         """
-        # For MySQL on pythonanywhere.com
-        # cnx=mysql.connector.connect(user="BoseV",password="mysqlpython", host="BoseV.mysql.pythonanywhere-services.com",port=3306, database="BoseV$test")
-        # cnx=mysql.connector.connect(user='admin',password='admin',host='DESKTOP-8Q49TBD',port=3305,database='test')
-        # cnx=mysql.connector.connect(user='test',password='test',host='localhost',port=3305,database='test')
         match self.dbType:
             case DbType.SQLITE:
                 return sqlite3.connect(self.dbLocation)
@@ -109,8 +105,6 @@ class Db:
 
         The database is ready to interact with after this function is done running.
         """
-        # self._connect(dbLocation=dbLocation, dbType=dbType)
-        # self._setCursor()
         self.dbLocation = dbLocation
         self.dbType = dbType
         imageFolder = pathlib.Path(os.path.join("static", IMAGE_FOLDER))
@@ -157,14 +151,6 @@ class Db:
         # No longer needed as we no longer mantain a global connection for all requests.
         # atexit.register(self.cleanup)
         return
-
-    # def cleanup(self):
-    #     self.dbConnection.commit()
-    #     self.dbConnection.close()
-    #     return
-
-    # def createPost(self, postData: str, postAuthor: str):
-    #     (dbConn, dbCursor) = self.executeOneQuery("")
 
     def _getDb(self) -> tuple[Connection, Cursor]:
         conn = self._connect()
@@ -360,12 +346,6 @@ class Db:
         This function expects the parameters to be dumped in directly from the `request` object returned by a flask server.
         """
         profile_picture_path: str | None
-        # profile_picture_path_tmp: str | None = self.upload_image(profile_picture)
-        # if profile_picture_path_tmp is None:
-        #     profile_picture_path = ERROR_ICON_PATH
-        # else:
-        #     profile_picture_path = profile_picture_path_tmp
-        # profile_picture_path = ERROR_ICON_PATH
         if (
             (profile_picture is None)
             or (profile_picture.filename is None)
@@ -374,26 +354,6 @@ class Db:
             profile_picture_path = ERROR_ICON_PATH
         else:
             profile_picture_path = self.upload_image(profile_picture)
-            # imgExt = profile_picture.filename.rsplit(".", 1)[1].lower()
-            # md5 = hashlib.md5()
-            # # Break out of loop manually once the entire file has been read
-            # imgStream = profile_picture.stream
-            # while True:
-            #     # Read data in chunks to avoid running out of memory.
-            #     data = imgStream.read(BUF_SIZE)
-            #     if not data:
-            #         break
-            #     md5.update(data)
-            # # The final file name
-            # fileName = md5.hexdigest()
-            # profile_picture_path = "/".join(
-            #     ["static", IMAGE_FOLDER, f"{fileName}.{imgExt}"]
-            # )
-            # print(profile_picture_path)
-            # imgStream.seek(0)
-            # with open(pathlib.Path(profile_picture_path), "wb") as f:
-            #     f.write(imgStream.read())
-            # # profile_picture.save(profile_picture_path)
         (dbConn, dbCursor) = self.executeOneQuery(
             f"INSERT INTO users (username, email, password, profile_picture) VALUES ({sqlParam('username',self.dbType)}, {sqlParam('email',self.dbType)}, {sqlParam('password',self.dbType)}, {sqlParam('pic_path',self.dbType)})",
             {
@@ -489,7 +449,6 @@ class Db:
         with open(pathlib.Path(profile_picture_path), "wb") as f:
             f.write(imgStream.read())
         return profile_picture_path
-        # profile_picture.save(profile_picture_path)
 
 
 def getImageExtensionFromFilename(filename: str) -> str:
