@@ -1,7 +1,6 @@
 from flask import Flask, flash, render_template, request, redirect, url_for, session
 import sqlite3, os
 from werkzeug.utils import secure_filename
-
 import db_utils
 
 app = Flask(__name__, static_url_path="/static", static_folder="static")
@@ -32,7 +31,7 @@ init()
 
 @app.route("/")
 def index():
-    print(session.keys())
+    # print(session)
     if ("userid" in session) or ("username" in session):
         return redirect(f'/home/{session["username"]}')
     return redirect("/login")
@@ -242,20 +241,32 @@ def delete_account(username):
 
 @app.route("/account_deleted")
 def account_deleted():
+    session.pop("userid", None)
+    session.pop("username", None)
+    # print(session.keys())
+    # print(session.items())
+    flash("You have deleted your acount successfully ", "success")
     # return "Your account has been deleted successfully."
     return redirect("/")
 
-
-@app.route("/post")
+# NOTE change back create user
+@app.route("/post" , methods = ["POST","GET"])
 def create_post():
-    return render_template("test.html")
-
+    users = db_obj.dumpUsers()
+    res = []
+    content = request.form.get("content")
+    user = request.form.get("users")
+    # print(content)
+    # print(user)
+    if not (user is None or content is None):
+        db_obj.createPost(int(user),content)
+    res = db_obj.getAllPost()
+    return render_template("test.html",users = users,posts = res)
 
 @app.route("/users-data-all")
 def get_dict():
     res = db_obj.dumpUsers()
     return render_template("list.html", data=res, username="")
-
 
 if __name__ == "__main__":
     app.run(debug=True)

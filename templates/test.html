@@ -1,15 +1,49 @@
 <!DOCTYPE html>
-<html lang="en">
+    <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>text</title>
 </head>
 <body>
-    <form action="" method="post">
-        <label for="name" id ="name"></label>
-        <input type="text" id = name >
+    <form action="/post" method="post">
+        <label for="users" id = "users">users</label>
+        <div>
+            <select name="users" id="users">
+                <option value="None">None</option>
+                {% for user in users%}
+                <option value="{{ user[0]}}">{{user[0]}}</option>    
+                {% endfor%}
+            </select>
+        </div> 
+        
+        <h2> posts</h2>
+        
+        
+        {% for datas in posts %}
+        {% for data in datas %}
+        <div>{{data}}</div>
+        {%endfor %}
+        <br>
+        {% endfor%}
+        
+        
+        <h2>replies</h2>
+        <label for="post" id = "post">users</label>
+        <div>
+            <select name="post" id="post">
+                {% for user in users%}
+                <option value="{{ posts[0]}}">{{posts[0]}}</option>    
+                {% endfor%}
+            </select>
+        </div> 
+        <label for="content" id ="content">content</label>
+        
+        <div>
+            <input type="text" name = "content" id = "content" >
+        </div>
         <button type="submit" > submit</button>
+        
     </form>
 </body>
 </html>
