@@ -7,12 +7,20 @@
 </head>
 <body>
     <form action="/post" method="post">
-        <label for="users" id = "users">users</label>
+        <label for="users" id = "users">creater</label>
         <div>
             <select name="users" id="users">
-                <option value="None">None</option>
                 {% for user in users%}
                 <option value="{{ user[0]}}">{{user[0]}}</option>    
+                {% endfor%}
+            </select>
+        </div> 
+        <label for="reply" id = "reply">reply-for</label>
+        <div>
+            <select name="reply" id="reply">
+                <option value="none"> none</option>
+                {% for post in posts%}
+                <option value="{{ post[0]}}">{{post[0]}}</option>    
                 {% endfor%}
             </select>
         </div> 
@@ -29,16 +37,27 @@
         
         
         <h2>replies</h2>
-        <label for="post" id = "post">users</label>
+        <label for="root_id" id = "root_id">root_id</label>
         <div>
-            <select name="post" id="post">
-                {% for user in users%}
-                <option value="{{ posts[0]}}">{{posts[0]}}</option>    
+
+            <select name="root_id" id="root_id">
+                <!-- <option value="none">none</option> -->
+                {% for post in posts %}
+                <option value="{{ post[0]}}">{{post[0]}}</option>    
                 {% endfor%}
             </select>
         </div> 
-        <label for="content" id ="content">content</label>
+
+         
+        {% for reply in replies %}
+        {% for data in reply %}
+        <div>{{data}}</div>
+        {%endfor %}
+        <br>
+        {% endfor%}
         
+
+        <label for="content" id ="content">content</label>
         <div>
             <input type="text" name = "content" id = "content" >
         </div>

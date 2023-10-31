@@ -134,8 +134,8 @@ class Db:
                     id INTEGER PRIMARY KEY AUTO_INCREMENT,
                     author_id INTEGER REFERENCES users(id),
                     content TEXT,
-                    created_at INTEGER DEFAULT UNIX_TIMESTAMP() NOT NULL,
-                    parent_id INTEGER REFERENCES posts(id),
+                    created_at INTEGER NOT NULL,
+                    parent_id INTEGER REFERENCES posts(id) ,
                     root_id INTEGER REFERENCES posts(id)
                     )"""
             )
@@ -149,14 +149,14 @@ class Db:
                         profile_picture TEXT)"""
             )
             self.executeScript(
-                """CREATE TABLE IF NOT EXISTS posts(
-                    id INTEGER PRIMARY KEY AUTOINCREMENT,
-                    author_id INTEGER REFERENCES users(id),
-                    content TEXT,
-                    created_at INTEGER NOT NULL,
-                    parent_id INTEGER REFERENCES posts(id),
-                    root_id INTEGER REFERENCES posts(id)
-                    )"""
+                    """CREATE TABLE IF NOT EXISTS posts(
+                        id INTEGER PRIMARY KEY AUTOINCREMENT,
+                        author_id INTEGER REFERENCES users(id),
+                        content TEXT,
+                        created_at INTEGER NOT NULL,
+                        parent_id INTEGER REFERENCES posts(id),
+                        root_id INTEGER REFERENCES posts(id)
+                        )"""
             )
         # Taken from https://stackoverflow.com/a/41627098
         # No longer needed as we no longer mantain a global connection for all requests.
@@ -244,27 +244,16 @@ class Db:
         '''
         This function crerates post as well as it can create replies to the post
         '''
-        if( root_id is None):    
-            (dbConn, dbCursor) = self.executeOneQuery(
-                f"INSERT INTO posts (author_id, content,created_at) VALUES ({sqlParam('authorId',self.dbType)}, {sqlParam('content',self.dbType)}, {sqlParam('currTime',self.dbType)})",
-                {
-                    "authorId": str(user_id),
-                    "content": content,
-                    "currTime" : str(math.floor((datetime.now() - datetime(1970, 1, 1)).total_seconds()))
-                }
+        (dbConn, dbCursor) = self.executeOneQuery(
+            f"INSERT INTO posts (author_id, content,created_at, parent_id, root_id) VALUES ({sqlParam('authorId',self.dbType)}, {sqlParam('content',self.dbType)}, {sqlParam('currTime',self.dbType)}, {sqlParam('parentId',self.dbType)}, {sqlParam('rootId',self.dbType)})",
+            {
+                "authorId": str(user_id),
+                "content": content,
+                "parentId" : None if root_id is None else str(root_id) if parent_id is None else str(parent_id),
+                "rootId": None if root_id is None else str(root_id),
+                "currTime" : str(math.floor((datetime.now() - datetime(1970, 1, 1)).total_seconds()))
+            }
             )
-
-        else:
-            (dbConn, dbCursor) = self.executeOneQuery(
-                f"INSERT INTO posts (author_id, content,created_at, parent_id, root_id) VALUES ({sqlParam('authorId',self.dbType)}, {sqlParam('content',self.dbType)}, {sqlParam('currTime',self.dbType)}, {sqlParam('parentId',self.dbType)}, {sqlParam('rootId',self.dbType)})",
-                {
-                    "authorId": str(user_id),
-                    "content": content,
-                    "parentId" : str(root_id) if parent_id is None else str(parent_id),
-                    "rootId": str(root_id),
-                    "currTime" : str(math.floor((datetime.now() - datetime(1970, 1, 1)).total_seconds()))
-                }
-                )
 
         dbConn.close()
 
@@ -282,43 +271,35 @@ class Db:
         
     def getAllPost(
             self,
-            count:int|None = None) -> list[Any]:
+            range:list[Any]) -> list[Any]:
         
         ''' this function gives the list of post details in form of
             username , content , profile picture, created_at
         '''
         (dbConn,dbCursor) = self.executeOneQuery(
-            f"SELECT users.username,posts.content,users.profile_picture,posts.created_at FROM posts JOIN users ON posts.author_id = users.id WHERE posts.root_id IS NULL"
+            f'''SELECT posts.id,users.username,posts.content,users.profile_picture,posts.created_at FROM posts JOIN users ON posts.author_id = users.id WHERE posts.root_id IS NULL LIMIT {range[1] - range[0]} OFFSET {range[0]}; 
+            ''' 
         )
-        if count is None:
-            res = self.getResults(dbCursor )
-        else :
-            res = self.getResults(dbCursor , count) 
-
+         
+        res = self.getResults(dbCursor)
         dbConn.close()
-
         return res
-
-    # TODO:
+    
     def getAllRepies(
             self,
-            postId:int,
             rootId:int,
-            range:int) -> list[Any]:
-        ''' this function returns data in folooing format
+            range:list[Any]
+            ) -> list[Any]:
+        ''' this function eturns data in folooing format
             username , content , profile_picture ,created_at
             '''
-        
-        return[]
-    # TODO: create a function to get result from given range
-    
-    def getResultsInRange(
-            self,
-            dbCursor: Cursor,
-            range: list[int]
-              ) -> list[Any]:
-        return []
-    
+        (dbConn,dbCursor) = self.executeOneQuery(
+            f'''SELECT posts.id,users.username,posts.content,users.profile_picture,posts.created_at FROM posts JOIN users ON posts.author_id = users.id WHERE posts.root_id = {rootId} LIMIT {range[1] - range[0]} OFFSET {range[0]}; 
+            ''' 
+        )
+        res = self.getResults(dbCursor)
+        dbConn.close()
+        return res
 
 
 
@@ -440,7 +421,7 @@ class Db:
         username: str,
         password: str,
         email: str,
-        profile_picture: FileStorage | None = None,
+        profile_picture: FileStorage,
     ) -> None:
         """The main function to generate entries for a new user.
 

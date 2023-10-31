@@ -255,13 +255,24 @@ def create_post():
     users = db_obj.dumpUsers()
     res = []
     content = request.form.get("content")
-    user = request.form.get("users")
+    creater = request.form.get("users")
+    root_id = str(request.form.get('root_id')) # post cration
+    getRepiesFor= str(request.form.get("reply")) # view post
     # print(content)
     # print(user)
-    if not (user is None or content is None):
-        db_obj.createPost(int(user),content)
-    res = db_obj.getAllPost()
-    return render_template("test.html",users = users,posts = res)
+    if not (creater is None or content is None):
+        if root_id.lower() != "none":
+            db_obj.createPost(user_id=int(creater),content= content,root_id= int(root_id))
+        else:
+            db_obj.createPost(int(creater),content)
+
+    res = db_obj.getAllPost([0,10])
+    allReplies = []
+    if getRepiesFor.lower() != "none":
+        allReplies = db_obj.getAllRepies(int(getRepiesFor), [0,10])
+    print(272 , root_id,getRepiesFor , allReplies)
+
+    return render_template("test.html",users = users,posts = res , replies = allReplies)
 
 @app.route("/users-data-all")
 def get_dict():
