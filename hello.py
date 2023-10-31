@@ -75,6 +75,7 @@ def home(username: str, page: str):
                 "home_new.html",
                 posts=posts,
                 profile_picture=user["profile_picture"],
+                username=user["username"],
             )
         except:
             raise
