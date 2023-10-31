@@ -139,7 +139,7 @@ def account(username):
 
     if res is not None:
         return render_template(
-            "account.html",
+            "account_new.html",
             username=res["username"],
             email=res["email"],
             profile_picture=res["profile_picture"],
@@ -181,22 +181,24 @@ def change_password(username):
         return redirect("/")
 
     if res is not None:
-        success_message = "Password changed successfully"
+        # success_message = "Password changed successfully"
+        flash("Password changed successfully!", "success")
         return render_template(
-            "account.html",
+            "account_new.html",
             username=res1["username"],
             email=res1["email"],
             profile_picture=res1["profile_picture"],
-            success_message=success_message,
+            # success_message=success_message,
         )
     else:
-        error_message = "Incorrect old password"
+        # error_message = "Incorrect old password"
+        flash("Incorrect old password!", "error")
         return render_template(
-            "account.html",
+            "account_new.html",
             username=res1["username"],
             email=res1["email"],
             profile_picture=res1["profile_picture"],
-            error_message=error_message,
+            # error_message=error_message,
         )
 
 
@@ -245,6 +247,7 @@ def delete_account(username):
 @app.route("/account_deleted")
 def account_deleted():
     # return "Your account has been deleted successfully."
+    flash("Your account has been deleted successfully!", "success")
     return redirect("/")
 
 
@@ -257,6 +260,11 @@ def create_post():
 def get_dict():
     res = db_obj.dumpUsers()
     return render_template("list.html", data=res, username="")
+
+
+@app.errorhandler(404)
+def page_not_found(err):
+    return render_template("404.html"), 404
 
 
 ex_name = "Leslie Alexander"
