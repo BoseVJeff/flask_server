@@ -11,13 +11,13 @@ from werkzeug.utils import secure_filename
 import os
 import pathlib
 import typing
-
+from datetime import datetime
 import mysql_config
 
 
 # Buffer size for file IO
 BUF_SIZE = 65536
-
+    
 # Error Icon
 ERROR_ICON_PATH = "/".join(["static", "error.png"])
 
@@ -29,9 +29,9 @@ Connection: typing.TypeAlias = (
     sqlite3.Connection
     | mysql.connector.pooling.PooledMySQLConnection
     | mysql.connector.MySQLConnection
-    | mysql.connector.CMySQLConnection
+    # | mysql.connector.CMySQLConnection
 )
-Cursor: typing.TypeAlias = sqlite3.Cursor | mysql.connector.cursor.MySQLCursor
+Cursor: typing.TypeAlias = sqlite3.Cursor | mysql.connector.cursor.MySQLCursor # type: ignore
 
 # The default host and ports for a local MySQL install can be obtained by running `SHOW VARIABLES WHERE Variable_name in ('port','hostname');` in the MySQL terminal.
 # In MySQL workbench, accounts using this default hostname have the value of host matching set to `%`.
@@ -132,9 +132,10 @@ class Db:
             self.executeScript(
                 """CREATE TABLE IF NOT EXISTS posts(
                     id INTEGER PRIMARY KEY AUTO_INCREMENT,
-                    author INTEGER REFERENCES users(id),
-                    content TEXT,created_at INTEGER DEFAULT CURRENT_TIMESTAMP NOT NULL,
-                    parent_id INTEGER REFERENCES posts(id),
+                    author_id INTEGER REFERENCES users(id),
+                    content TEXT,
+                    created_at INTEGER NOT NULL,
+                    parent_id INTEGER REFERENCES posts(id) ,
                     root_id INTEGER REFERENCES posts(id)
                     )"""
             )
@@ -148,13 +149,14 @@ class Db:
                         profile_picture TEXT)"""
             )
             self.executeScript(
-                """CREATE TABLE IF NOT EXISTS posts(
-                    id INTEGER PRIMARY KEY AUTOINCREMENT,
-                    author INTEGER REFERENCES users(id),
-                    content TEXT,created_at INTEGER DEFAULT CURRENT_TIMESTAMP NOT NULL,
-                    parent_id INTEGER REFERENCES posts(id),
-                    root_id INTEGER REFERENCES posts(id)
-                    )"""
+                    """CREATE TABLE IF NOT EXISTS posts(
+                        id INTEGER PRIMARY KEY AUTOINCREMENT,
+                        author_id INTEGER REFERENCES users(id),
+                        content TEXT,
+                        created_at INTEGER NOT NULL,
+                        parent_id INTEGER REFERENCES posts(id),
+                        root_id INTEGER REFERENCES posts(id)
+                        )"""
             )
         # Taken from https://stackoverflow.com/a/41627098
         # No longer needed as we no longer mantain a global connection for all requests.
@@ -183,7 +185,7 @@ class Db:
             dbCursor.execute(sql, parameters)
             dbConnection.commit()
         except:
-            # The expected useage pattern for this function is `(dbConn, dbCursor) = self.executeOneQuery()`.
+            # The expected usage pattern for this function is `(dbConn, dbCursor) = self.executeOneQuery()`.
             # This does not yield itself to the function being able to clean up wasily if an error occours at this stage of the process.
             # Therefore, this function takes it upon itself to close its connection.
             # Commiting changes is avoided here as a broken query is assumed to have no changes that are left to commit.
@@ -230,26 +232,78 @@ class Db:
             # Commiting changes is avoided here as a broken query is assumed to have no changes that are left to commit.
             dbConnection.close()
         return (dbConnection, dbCursor)
-
+    #  the code for post starts from here
     def createPost(
         self,
         user_id: int,
         content: str,
-        parent_id: int | None = None,
-        root_id: int | None = None,
+        parent_id: int | None = None,# Id of post
+        root_id: int | None = None # Id of orignal post
     ):
+        
+        '''
+        This function crerates post as well as it can create replies to the post
+        '''
         (dbConn, dbCursor) = self.executeOneQuery(
-            f"INSERT INTO posts (author, content, parent_id, root_id) VALUES ({sqlParam('authorId',self.dbType)}, {sqlParam('content',self.dbType)}, {sqlParam('parentId',self.dbType)}, {sqlParam('postId',self.dbType)})",
+            f"INSERT INTO posts (author_id, content,created_at, parent_id, root_id) VALUES ({sqlParam('authorId',self.dbType)}, {sqlParam('content',self.dbType)}, {sqlParam('currTime',self.dbType)}, {sqlParam('parentId',self.dbType)}, {sqlParam('rootId',self.dbType)})",
             {
                 "authorId": str(user_id),
                 "content": content,
-                "parentId": str(parent_id),
-                "rootId": str(root_id),
-            },
-        )
+                "parentId" : None if root_id is None else str(root_id) if parent_id is None else str(parent_id),
+                "rootId": None if root_id is None else str(root_id),
+                "currTime" : str(math.floor((datetime.now() - datetime(1970, 1, 1)).total_seconds()))
+            }
+            )
+
         dbConn.close()
 
-    def getResults(self, dbCursor: Cursor, count: int | None = None) -> list[Any]:
+
+    def deletePost(
+            self,
+            postId:int) -> None:
+        (dbConn,dbCursor) = self.executeOneQuery(
+            f"DELETE FROM posts WHERE id ={sqlParam("postid",self.dbType)}",
+            {
+                "postId" : str(postId)
+            }
+        )
+        dbConn.close()
+        
+    def getAllPost(
+            self,
+            range:list[Any]) -> list[Any]:
+        
+        ''' this function gives the list of post details in form of
+            username , content , profile picture, created_at
+        '''
+        (dbConn,dbCursor) = self.executeOneQuery(
+            f'''SELECT posts.id,users.username,posts.content,users.profile_picture,posts.created_at FROM posts JOIN users ON posts.author_id = users.id WHERE posts.root_id IS NULL LIMIT {range[1] - range[0]} OFFSET {range[0]}; 
+            ''' 
+        )
+         
+        res = self.getResults(dbCursor)
+        dbConn.close()
+        return res
+    
+    def getAllRepies(
+            self,
+            rootId:int,
+            range:list[Any]
+            ) -> list[Any]:
+        ''' this function eturns data in folooing format
+            username , content , profile_picture ,created_at
+            '''
+        (dbConn,dbCursor) = self.executeOneQuery(
+            f'''SELECT posts.id,users.username,posts.content,users.profile_picture,posts.created_at FROM posts JOIN users ON posts.author_id = users.id WHERE posts.root_id = {rootId} LIMIT {range[1] - range[0]} OFFSET {range[0]}; 
+            ''' 
+        )
+        res = self.getResults(dbCursor)
+        dbConn.close()
+        return res
+
+
+
+    def getResults(self, dbCursor: Cursor, count: int |None = None) -> list[Any]:
         """Returns `count` number of results from the supplied cursor.
 
         If `count` is not defined, all rows are returned.
@@ -293,7 +347,7 @@ class Db:
         """
         (dbConn, dbCursor) = self.executeOneQuery(
             # "SELECT username,email,profile_picture FROM users WHERE username=:username",
-            f"SELECT username,email,profile_picture FROM users WHERE username={sqlParam('username',self.dbType)}",
+            f"SELECT id ,username,email,profile_picture FROM users WHERE username={sqlParam('username',self.dbType)}",
             {"username": username},
         )
         rawResult = self.getResults(dbCursor)[0]
@@ -304,9 +358,10 @@ class Db:
 
         print(rawResult)
         formattedResults = {
-            "username": rawResult[0],
-            "email": rawResult[1],
-            "profile_picture": rawResult[2],
+            "id" : rawResult[0],
+            "username": rawResult[1],
+            "email": rawResult[2],
+            "profile_picture": rawResult[3],
         }
         return formattedResults
 
@@ -366,7 +421,7 @@ class Db:
         username: str,
         password: str,
         email: str,
-        profile_picture: FileStorage | None,
+        profile_picture: FileStorage,
     ) -> None:
         """The main function to generate entries for a new user.
 
@@ -392,7 +447,7 @@ class Db:
         )
         dbConn.close()
 
-    def deleteUser(self, username: str) -> bool:
+    def deleteUser(self, username: str) -> None:
         (dbConn, dbCursor) = self.executeOneQuery(
             f"DELETE FROM users WHERE username = {sqlParam('name',self.dbType)}",
             {
@@ -400,7 +455,6 @@ class Db:
             },
         )
         dbConn.close()
-        return True
 
     def updatePassword(self, username: str, oldPassword: str, newPassword: str) -> bool:
         usr = self.validateUser(userName=username, password=oldPassword)
@@ -476,7 +530,6 @@ class Db:
         with open(pathlib.Path(profile_picture_path), "wb") as f:
             f.write(imgStream.read())
         return profile_picture_path
-
 
 def getImageExtensionFromFilename(filename: str) -> str:
     """Get the file extension from filename/path.

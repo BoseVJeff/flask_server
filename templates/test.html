@@ -1,15 +1,68 @@
 <!DOCTYPE html>
-<html lang="en">
+    <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>text</title>
 </head>
 <body>
-    <form action="" method="post">
-        <label for="name" id ="name"></label>
-        <input type="text" id = name >
+    <form action="/post" method="post">
+        <label for="users" id = "users">creater</label>
+        <div>
+            <select name="users" id="users">
+                {% for user in users%}
+                <option value="{{ user[0]}}">{{user[0]}}</option>    
+                {% endfor%}
+            </select>
+        </div> 
+        <label for="reply" id = "reply">reply-for</label>
+        <div>
+            <select name="reply" id="reply">
+                <option value="none"> none</option>
+                {% for post in posts%}
+                <option value="{{ post[0]}}">{{post[0]}}</option>    
+                {% endfor%}
+            </select>
+        </div> 
+        
+        <h2> posts</h2>
+        
+        
+        {% for datas in posts %}
+        {% for data in datas %}
+        <div>{{data}}</div>
+        {%endfor %}
+        <br>
+        {% endfor%}
+        
+        
+        <h2>replies</h2>
+        <label for="root_id" id = "root_id">root_id</label>
+        <div>
+
+            <select name="root_id" id="root_id">
+                <!-- <option value="none">none</option> -->
+                {% for post in posts %}
+                <option value="{{ post[0]}}">{{post[0]}}</option>    
+                {% endfor%}
+            </select>
+        </div> 
+
+         
+        {% for reply in replies %}
+        {% for data in reply %}
+        <div>{{data}}</div>
+        {%endfor %}
+        <br>
+        {% endfor%}
+        
+
+        <label for="content" id ="content">content</label>
+        <div>
+            <input type="text" name = "content" id = "content" >
+        </div>
         <button type="submit" > submit</button>
+        
     </form>
 </body>
 </html>
