@@ -8,3 +8,4 @@ __pycache__
 # `venv` for Vineet's system
 nuv
 mysql_config.py
+jsconfig.json
