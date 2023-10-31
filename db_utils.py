@@ -11,9 +11,9 @@ from werkzeug.utils import secure_filename
 import os
 import pathlib
 import typing
-from datetime import datetime
+from datetime import datetime, timezone, tzinfo
 import mysql_config
-
+from zoneinfo import ZoneInfo
 
 # Buffer size for file IO
 BUF_SIZE = 65536
@@ -270,30 +270,55 @@ class Db:
         )
         dbConn.close()
 
-    def getAllPost(self, range: list[Any]) -> list[Any]:
+    def getAllPost(self, range: list[Any]) -> list[dict[str, str]]:
         """this function gives the list of post details in form of
         username , content , profile picture, created_at
         """
         (dbConn, dbCursor) = self.executeOneQuery(
-            f"""SELECT posts.id,users.username,posts.content,users.profile_picture,posts.created_at FROM posts JOIN users ON posts.author_id = users.id WHERE posts.root_id IS NULL LIMIT {range[1] - range[0]} OFFSET {range[0]}; 
+            f"""SELECT posts.id,users.username,posts.content,users.profile_picture,posts.created_at,posts.root_id FROM posts JOIN users ON posts.author_id = users.id WHERE posts.root_id IS NULL ORDER BY posts.created_at DESC LIMIT {range[1]} OFFSET {range[0]}; 
             """
         )
 
-        res = self.getResults(dbCursor)
+        result = self.getResults(dbCursor)
         dbConn.close()
-        return res
+        return [
+            {
+                "id": res[0],
+                "username": res[1],
+                "content": res[2],
+                "profile_picture": res[3],
+                "created_at": datetime.fromtimestamp(int(res[4])).strftime(
+                    "%Y-%m-%d %H:%M:%S"
+                ),
+                "root_id": res[5],
+            }
+            for res in result
+        ]
 
-    def getAllRepies(self, rootId: int, range: list[Any]) -> list[Any]:
+    def getAllRepies(self, rootId: int, range: list[Any]) -> list[dict[str, str]]:
         """this function eturns data in folooing format
         username , content , profile_picture ,created_at
         """
         (dbConn, dbCursor) = self.executeOneQuery(
-            f"""SELECT posts.id,users.username,posts.content,users.profile_picture,posts.created_at FROM posts JOIN users ON posts.author_id = users.id WHERE posts.root_id = {rootId} LIMIT {range[1] - range[0]} OFFSET {range[0]}; 
+            f"""SELECT posts.id,users.username,posts.content,users.profile_picture,posts.created_at,posts.parent_id,posts.root_id FROM posts JOIN users ON posts.author_id = users.id WHERE ((posts.root_id = {rootId}) OR (posts.id={rootId})) LIMIT {range[1]} OFFSET {range[0]};
             """
         )
-        res = self.getResults(dbCursor)
+        result = self.getResults(dbCursor)
         dbConn.close()
-        return res
+        return [
+            {
+                "id": res[0],
+                "username": res[1],
+                "content": res[2],
+                "profile_picture": res[3],
+                "created_at": datetime.fromtimestamp(int(res[4])).strftime(
+                    "%Y-%m-%d %H:%M:%S"
+                ),
+                "parent_id": res[5],
+                "root_id": res[6],
+            }
+            for res in result
+        ]
 
     def getResults(self, dbCursor: Cursor, count: int | None = None) -> list[Any]:
         """Returns `count` number of results from the supplied cursor.
