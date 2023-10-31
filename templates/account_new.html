@@ -1,0 +1,116 @@
+{% extends 'layout_new.html' %}
+
+{% block page_title %}
+Manage Your Account
+{% endblock %}
+
+
+
+{% block main %}
+<div class="bg-black text-center h-full grid place-items-center place-content-center gap-4">
+    <div class="grid grid-rows-2 place-items-center gap-1">
+        <div class="relative row-span-1 row-start-1">
+            <img src="{{profile_picture}}" alt="Profile Picture" class="rounded-full h-48 w-48 ">
+
+            <button type="button" onclick="togglePicForm()"
+                class="absolute bottom-0 right-0 z-10 form-input outline-none rounded-full bg-gray-700 text-white w-12 h-12 grid place-items-center p-0">
+                <span class="material-symbols-rounded rounded-full text-2xl">
+                    edit
+                </span>
+            </button>
+        </div>
+        <div class="row-span-1 row-start-2 text-white">
+            <form action="{{ url_for('upload_profile_picture', username=username) }}" method="post" id="change_pic"
+                class="hidden" enctype="multipart/form-data">
+                <label for="profile_picture">Profile Picture:</label>
+                <input type="file" id="profile_picture" name="profile_picture" required accept="image/*">
+
+                <input type="submit" value="Change Profile Picture"
+                    class="form-input text-black rounded-lg bg-green-500">
+            </form>
+        </div>
+        <script>
+            let pic_form = document.getElementById('change_pic');
+            function togglePicForm() {
+                pic_form.classList.toggle('hidden');
+                return;
+            }
+        </script>
+    </div>
+    <div class="text-lg text-white grid grid-rows-1 place-items-center">
+        <div class="row-start-1 row-span-1 flex flex-row align-baseline gap-1 font-medium">
+            {{username}}
+            <!-- <button type="button"
+                class="outline-none rounded-full bg-gray-700 text-white w-8 h-8 inline-grid place-items-center p-0">
+                <span class="material-symbols-rounded text-base">
+                    edit
+                </span>
+            </button> -->
+        </div>
+        <!-- <div class="row-start-2 row-span-1 text-base">
+            <form action="upload_username/{{username}}" method="post">
+                <label for="username">Enter new username</label>
+                <input type="text" name="username" id="username" placeholder="Enter new Username"
+                    class="form-input text-black rounded-lg bg-slate-500">
+                <input type="submit" value="Update" class="form-input text-black rounded-lg bg-green-500">
+            </form>
+        </div> -->
+    </div>
+    <div class="text-base text-white">
+        <div class="flex flex-row align-baseline gap-1">
+            {{email}}
+            <!-- <button type="button"
+                class="outline-none rounded-full bg-gray-700 text-white w-6 h-6 inline-grid place-items-center p-0">
+                <span class="material-symbols-rounded text-base">
+                    edit
+                </span>
+            </button> -->
+        </div>
+    </div>
+    <div class="text-base text-white grid grid-rows-2 place-items-center gap-1">
+        <div class="row-start-1 row-span-1 flex flex-row align-baseline gap-1">
+            Password: *******
+            <button type="button"
+                class="outline-none rounded-full bg-gray-700 text-white w-6 h-6 inline-grid place-items-center p-0"
+                onclick="togglePasswordForm()">
+                <span class="material-symbols-rounded text-base">
+                    edit
+                </span>
+            </button>
+        </div>
+        <div class="row-span-1 row-start-2 text-white">
+            <form action="{{ url_for('change_password', username=username) }}" method="post" id="change_password"
+                class="hidden">
+                <label for="old_password">Old Password:</label>
+                <input type="password" id="old_password" name="old_password" required
+                    class="form-input text-black rounded-lg bg-slate-500" autocomplete="current-password">
+
+                <label for="new_password">New Password:</label>
+                <input type="password" id="new_password" name="new_password" required
+                    class="form-input text-black rounded-lg bg-slate-500" autocomplete="new-password">
+
+                <input type="submit" value="Change Password" class="form-input text-black rounded-lg bg-green-500">
+            </form>
+        </div>
+        <script>
+            let pass_form = document.getElementById('change_password');
+            function togglePasswordForm() {
+                pass_form.classList.toggle('hidden');
+                return;
+            }
+        </script>
+    </div>
+    <div class="grid grid-cols-2 gap-4">
+        <a type="button" class="form-input rounded-lg bg-emerald-600 hover:bg-emerald-500 text-white cursor-pointer">
+            Log Out
+        </a>
+        <button type="button"
+            class="col-span-1 col-start-2 form-input rounded-lg bg-red-600 hover:bg-red-500 text-white">
+            Delete Account
+        </button>
+    </div>
+</div>
+{% endblock %}
+
+{% block foot %}
+{% endblock %}
