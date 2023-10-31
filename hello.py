@@ -1,6 +1,8 @@
+from http import server
 from flask import Flask, flash, render_template, request, redirect, url_for, session
 import sqlite3, os
 from werkzeug.utils import secure_filename
+import subprocess
 
 import db_utils
 
@@ -255,6 +257,109 @@ def create_post():
 def get_dict():
     res = db_obj.dumpUsers()
     return render_template("list.html", data=res, username="")
+
+
+ex_name = "Leslie Alexander"
+ex_pic = "https://images.unsplash.com/photo-1494790108377-be9c29b29330?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=facearea&facepad=2&w=256&h=256&q=80"
+ex_email = "leslie.alexander@example.com"
+
+
+@app.route("/design/<page>")
+def serve_design_template(page: str) -> str:
+    # Adding a few flashes for testing purposes
+    # flash("This an error message that should be flashed!", category="error")
+    # flash("This a warning message that should be flashed!", category="warning")
+    # flash("This an informational message that should be flashed!", category="info")
+    # flash("This a success message that should be flashed!", category="success")
+    # flash("This a miscellaneous message that should be flashed!", category="")
+    return render_template(
+        page, poll=page, username=ex_name, profile_picture=ex_pic, email=ex_email
+    )
+
+
+cnt_map: dict[str, bytes] = {}
+
+base_layout_path = os.path.join(os.getcwd(), "templates", "layout.html")
+
+base_layout_new_path = os.path.join(os.getcwd(), "templates", "layout_new.html")
+
+css_path = os.path.join(os.getcwd(), "static", "css", "output.css")
+
+server_path = os.path.join(os.getcwd(), "hello.py")
+
+
+@app.route("/design/poll_page/<page>")
+def is_page_modified(page: str):
+    # Returns `'true'` if the page has been modified since the last time it was polled
+    path = os.path.join(os.getcwd(), "templates", page)
+    file_bytes: bytes
+    is_changed = False
+    with open(path, "rb") as f:
+        file_bytes = f.read()
+        if path not in cnt_map:
+            cnt_map[path] = file_bytes
+            # is_changed = False
+        else:
+            if cnt_map[path] != file_bytes:
+                is_changed = True
+                cnt_map[path] = file_bytes
+        f.close()
+    path = base_layout_path
+    with open(path, "rb") as f:
+        file_bytes = f.read()
+        if path not in cnt_map:
+            cnt_map[path] = file_bytes
+            # is_changed = False
+        else:
+            if cnt_map[path] != file_bytes:
+                is_changed = True
+                cnt_map[path] = file_bytes
+        f.close()
+    path = base_layout_new_path
+    with open(path, "rb") as f:
+        file_bytes = f.read()
+        if path not in cnt_map:
+            cnt_map[path] = file_bytes
+            # is_changed = False
+        else:
+            if cnt_map[path] != file_bytes:
+                is_changed = True
+                cnt_map[path] = file_bytes
+        f.close()
+    path = server_path
+    with open(path, "rb") as f:
+        file_bytes = f.read()
+        if path not in cnt_map:
+            cnt_map[path] = file_bytes
+            is_changed = True
+        else:
+            if cnt_map[path] != file_bytes:
+                is_changed = True
+                cnt_map[path] = file_bytes
+        f.close()
+    # HACK: This part is very inefficient. Proper approach would be to monitor relevant directories and do it accordingly.
+    # A better approach that could exist in a seperate thread is outlined in https://stackoverflow.com/a/28319191
+    subprocess.call(
+        [
+            "tailwindcss.exe",
+            "-i",
+            "static/css/input.css",
+            "-o",
+            "static/css/output.css",
+        ],
+    )
+    path = css_path
+    with open(path, "rb") as f:
+        file_bytes = f.read()
+        if path not in cnt_map:
+            cnt_map[path] = file_bytes
+            is_changed = True
+        else:
+            if cnt_map[path] != file_bytes:
+                is_changed = True
+                cnt_map[path] = file_bytes
+        f.close()
+    return str(1) if is_changed else str(0)
 
 
 if __name__ == "__main__":
