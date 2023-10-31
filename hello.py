@@ -104,7 +104,7 @@ def signup():
             email=email,
             profile_picture=profile_picture,
         )
-        return redirect(url_for("home", username=username))
+        return redirect(f"/home/{username}")
     elif request.method == "GET":
         return render_template("signup.html", username="")
     else:
@@ -124,7 +124,7 @@ def login():
             session["username"] = user["username"]
             # print(session.keys())
             # print(session.items())
-            return redirect(url_for("home", username=user["username"]))
+            return redirect(f"/home/{username}")
         else:
             error_message = "Invalid username or password"
             flash(error_message, "error")
