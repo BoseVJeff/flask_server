@@ -257,6 +257,11 @@ def delete_account(username):
         if session["username"] != username:
             # logged in as a different user
             return redirect("/login")
+    session.pop("userid", None)
+    session.pop("username", None)
+    # print(session.keys())
+    # print(session.items())
+    flash("Your account has been deleted successfully!", "success")
     db_obj.deleteUser(username=username)
 
     # Redirect to a page indicating successful account deletion

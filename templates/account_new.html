@@ -101,13 +101,14 @@ Manage Your Account
         </script>
     </div>
     <div class="grid grid-cols-2 gap-4">
-        <a type="button" class="form-input rounded-lg bg-emerald-600 hover:bg-emerald-500 text-white cursor-pointer">
+        <a href="logout" type="button"
+            class="form-input rounded-lg bg-emerald-600 hover:bg-emerald-500 text-white cursor-pointer">
             Log Out
         </a>
-        <button type="button"
+        <a href="delete_account/{{username}}"
             class="col-span-1 col-start-2 form-input rounded-lg bg-red-600 hover:bg-red-500 text-white">
             Delete Account
-        </button>
+        </a>
     </div>
 </div>
 {% endblock %}
