@@ -44,7 +44,7 @@ Home
                     <!-- Placeholder. TODO -->
                     <form action="/login" method="post" class="grid grid-cols-[1fr_auto] gap-1 w-full self-stretch">
                         <!-- <input type="text" name="content" id="content" class="col-start-1 col-span-1 form-input bg-slate-500"> -->
-                        <input type="text"
+                        <input type="text" required
                             class="col-start-1 col-span-1 form-input bg-slate-500 placeholder:text-neutral-200 placeholder:text-sm rounded"
                             placeholder="Reply to {{post['username']}}">
                         <input type="submit" value="send"
@@ -97,7 +97,7 @@ Home
     <form action="/create-post" method="post" class="grid grid-cols-[1fr_auto]">
         <!-- <input type="text" name="content" id="content" class="col-start-1 col-span-1 form-input bg-slate-500"> -->
         <!-- <textarea name="content" id="content" class="col-start-1 col-span-1 form-textarea bg-slate-500"></textarea> -->
-        <input type="text"
+        <input type="text" required
             class="col-start-1 col-span-1 form-input bg-slate-500 rounded-l placeholder:text-neutral-200 placeholder:text-sm"
             placeholder="{% if root_id or parent_id %}Reply to this post{% else %}Post something{% endif %}">
         <!-- <input type="submit" value="Post" class="col-start-2 col-span-1 form-input bg-blue-500 cursor-pointer"> -->
