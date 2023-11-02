@@ -158,6 +158,14 @@ class Db:
                         root_id INTEGER REFERENCES posts(id)
                         )"""
             )
+        #             self.executeScript(
+        #                 """CREATE TABLE IF NOT EXISTS reacts(
+        #                     reactor_id INTEGER REFERENCES users(id),
+        #                     post_id INTEGER REFERENCES posts(id),
+        #                     reaction INTEGER NOT NULL DEFAULT 0,
+        #                     PRIMARY KEY (reactor_id, post_id))
+        # """
+        #             )
         # Taken from https://stackoverflow.com/a/41627098
         # No longer needed as we no longer mantain a global connection for all requests.
         # atexit.register(self.cleanup)
@@ -232,6 +240,68 @@ class Db:
             # Commiting changes is avoided here as a broken query is assumed to have no changes that are left to commit.
             dbConnection.close()
         return (dbConnection, dbCursor)
+
+    # Like/dislike posts
+    # def setReaction(self, reaction: int, post_id: int, user_id: int) -> int:
+    #     """This function sets the reaction for a given post. Returns the value set if it is successful.
+
+    #     The possible reactions are:
+    #     1. `-1` - Dislike
+    #     2. `0` - No Preference (Default)
+    #     3. `1` - Like
+    #     """
+    #     (dbConn, dbCursor) = self.executeOneQuery(
+    #         f"INSERT INTO reacts (reaction, post_id, reactor_id) VALUES ({sqlParam('reaction',self.dbType)}, {sqlParam('post_id',self.dbType)}, {sqlParam('reactor_id',self.dbType)})",
+    #         {
+    #             "reaction": str(reaction),
+    #             "post_id": str(post_id),
+    #             "reactor_id": str(user_id),
+    #         },
+    #     )
+    #     dbConn.close()
+    #     return reaction
+
+    # def getReaction(self, post_id: int, user_id: int) -> int:
+    #     """This function gets how the user has reacted to this post. Returns 0 if user has not yet reacted.
+
+    #     The possible reactions are:
+    #     1. `-1` - Dislike
+    #     2. `0` - No Preference (Default)
+    #     3. `1` - Like
+    #     """
+    #     (dbConn, dbCursor) = self.executeOneQuery(
+    #         f"SELECT reaction FROM reacts WHERE reactor_id={sqlParam('user_id',self.dbType)} AND post_id={sqlParam('post_id',self.dbType)}",
+    #         {
+    #             "user_id": str(user_id),
+    #             "post_id": str(post_id),
+    #         },
+    #     )
+    #     result = self.getResults(dbCursor, 1)
+    #     if len(result) == 0:
+    #         return 0
+    #     return result[0][0]
+
+    # def getReactionCount(self, post_id: int, reaction_type: int | None = None) -> int:
+    #     if reaction_type == None:
+    #         (dbConn, dbCursor) = self.executeOneQuery(
+    #             f"SELECT reaction,COUNT(*) FROM reacts WHERE post_id={sqlParam('post_id',self.dbType)} GROUP BY reaction",
+    #             {
+    #                 "post_id": str(post_id),
+    #             },
+    #         )
+    #     else:
+    #         (dbConn, dbCursor) = self.executeOneQuery(
+    #             f"SELECT COUNT(*) FROM reacts WHERE post_id={sqlParam('post_id',self.dbType)}",
+    #             {
+    #                 "post_id": str(post_id),
+    #             },
+    #         )
+    #     res = self.getResults(dbCursor)
+    #     dbConn.close()
+    #     counts={}
+    #     for reacti in res:
+    #         counts[reacti]
+    #     return res[0][0]
 
     #  the code for post starts from here
     def createPost(
