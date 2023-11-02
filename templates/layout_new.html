@@ -9,7 +9,13 @@
         Social Media Site
         {% endblock %}
     </title>
+    <!-- This ensures that all links and profile pics work correctly. Compensates for an assumption made during design. -->
     <base href="/">
+    <!-- Advice taken from https://css-tricks.com/how-to-favicon-in-2021/ -->
+    <!-- Image converted from source svg (vectorised fro bitmap) from https://stackoverflow.com/a/69487280 -->
+    <link rel="icon" href="static/favicons/favicon.ico" sizes="any"><!-- 32×32 -->
+    <link rel="icon" href="static/favicons/favicon.svg" type="image/svg+xml">
+    <link rel="apple-touch-icon" href="static/favicons/apple-icon-touchfavicon.svg"><!-- 180×180 -->
     {% if poll %}
     <script>
         let intervalId;
