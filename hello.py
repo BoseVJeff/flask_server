@@ -418,6 +418,8 @@ posts = [
     for post in posts
 ]
 
+posts.reverse()
+
 
 @app.route("/design/<page>")
 def serve_design_template(page: str) -> str:
