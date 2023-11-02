@@ -41,6 +41,19 @@ Home
             <div
                 class="flex justify-between items-center space-x-4 pt-4 border-t border-gray-200 dark:border-gray-700 p-4">
                 <div class="flex items-center space-x-4">
+                    <!-- Placeholder. TODO -->
+                    <form action="/login" method="post" class="grid grid-cols-[1fr_auto] gap-1 w-full self-stretch">
+                        <!-- <input type="text" name="content" id="content" class="col-start-1 col-span-1 form-input bg-slate-500"> -->
+                        <input type="text"
+                            class="col-start-1 col-span-1 form-input bg-slate-500 placeholder:text-neutral-200 placeholder:text-sm rounded"
+                            placeholder="Reply to {{post['username']}}">
+                        <input type="submit" value="send"
+                            class="material-symbols-rounded col-start-2 col-span-1 form-input bg-blue-500 cursor-pointer rounded">
+                        <input type="hidden" name="root_id"
+                            value="{{post['root_id'] if ('root_id' in post) and (post['root_id']!=None) else post['id']}}">
+                        <input type="hidden" name="parent_id" value="{{post['id']}}">
+
+                    </form>
                     <!-- {% if 'parent_id' in post and post['parent_id']!='None' %} -->
                     <!-- <a href="#{{post['parent_id']}}"> -->
                     <svg class=" h-4 w-4 text-gray-500 dark:text-gray-200" fill="none" height="24" stroke="currentColor"
@@ -80,13 +93,25 @@ Home
 <div class="bg-neutral-900 text-white px-4 py-2">
     <form action="/create-post" method="post" class="grid grid-cols-[1fr_auto]">
         <!-- <input type="text" name="content" id="content" class="col-start-1 col-span-1 form-input bg-slate-500"> -->
-        <textarea name="content" id="content" class="col-start-1 col-span-1 form-textarea bg-slate-500"></textarea>
-        <input type="submit" value="Post" class="col-start-2 col-span-1 form-input bg-blue-500 cursor-pointer">
+        <!-- <textarea name="content" id="content" class="col-start-1 col-span-1 form-textarea bg-slate-500"></textarea> -->
+        <input type="text"
+            class="col-start-1 col-span-1 form-input bg-slate-500 rounded-l placeholder:text-neutral-200 placeholder:text-sm"
+            placeholder="Root Id: `{{root_id}}` Parent Id: `{{parent_id}}`">
+        <!-- <input type="submit" value="Post" class="col-start-2 col-span-1 form-input bg-blue-500 cursor-pointer"> -->
+        <button type="submit"
+            class="col-start-2 col-span-1 form-input bg-blue-500 cursor-pointer flex align-middle gap-1 rounded-r">
+            Send
+            <span class="material-symbols-rounded">
+                send
+            </span>
+        </button>
         {% if root_id %}
         <input type="hidden" name="root_id" value="{{root_id}}">
         {% endif %}
         {% if parent_id %}
+        {% if not root_id %}
         <input type="hidden" name="root_id" value="{{parent_id}}">
+        {% endif %}
         <input type="hidden" name="parent_id" value="{{parent_id}}">
         {% endif %}
     </form>
