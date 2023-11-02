@@ -39,7 +39,7 @@ Home
                 </div>
             </div>
             <div
-                class="flex justify-between items-center space-x-4 pt-4 border-t border-gray-200 dark:border-gray-700 p-4">
+                class="flex justify-between align-middle items-center space-x-4 pt-4 border-t border-gray-200 dark:border-gray-700 p-4">
                 <div class="flex items-center space-x-4">
                     <!-- Placeholder. TODO -->
                     <form action="/login" method="post" class="grid grid-cols-[1fr_auto] gap-1 w-full self-stretch">
@@ -67,14 +67,17 @@ Home
                     <!-- {% endif %} -->
                 </div>
                 <div class="flex items-center space-x-4">
-                    <a href="post/{{post['id']}}">
-                        <svg class=" h-4 w-4 text-gray-500 dark:text-gray-200" fill="none" height="24"
+                    <a href="post/{{post['id']}}" class="text-sm text-center">
+                        <!-- <svg class=" h-4 w-4 text-gray-500 dark:text-gray-200" fill="none" height="24"
                             stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                             viewBox="0 0 24 24" width="24" xmlns="http://www.w3.org/2000/svg">
                             <circle cx="12" cy="12" r="1"></circle>
                             <circle cx="19" cy="12" r="1"></circle>
                             <circle cx="5" cy="12" r="1"></circle>
-                        </svg>
+                        </svg> -->
+                        <span class="material-symbols-rounded">
+                            chat
+                        </span>
                     </a>
                     <!-- <svg class=" h-4 w-4 text-gray-500 dark:text-gray-200" fill="none" height="24" stroke="currentColor"
                         stroke-linecap="round" stroke-linejoin="round" stroke-width="2" viewBox="0 0 24 24" width="24"
@@ -96,7 +99,7 @@ Home
         <!-- <textarea name="content" id="content" class="col-start-1 col-span-1 form-textarea bg-slate-500"></textarea> -->
         <input type="text"
             class="col-start-1 col-span-1 form-input bg-slate-500 rounded-l placeholder:text-neutral-200 placeholder:text-sm"
-            placeholder="Root Id: `{{root_id}}` Parent Id: `{{parent_id}}`">
+            placeholder="{% if root_id or parent_id %}Reply to this post{% else %}Post something{% endif %}">
         <!-- <input type="submit" value="Post" class="col-start-2 col-span-1 form-input bg-blue-500 cursor-pointer"> -->
         <button type="submit"
             class="col-start-2 col-span-1 form-input bg-blue-500 cursor-pointer flex align-middle gap-1 rounded-r">
