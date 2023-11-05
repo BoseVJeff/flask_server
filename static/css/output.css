@@ -1088,6 +1088,11 @@ select {
   width: max-content;
 }
 
+.w-min {
+  width: -moz-min-content;
+  width: min-content;
+}
+
 .min-w-0 {
   min-width: 0px;
 }
