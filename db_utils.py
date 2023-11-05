@@ -300,7 +300,7 @@ class Db:
         username , content , profile_picture ,created_at
         """
         (dbConn, dbCursor) = self.executeOneQuery(
-            f"""SELECT posts.id,users.username,posts.content,users.profile_picture,posts.created_at,posts.parent_id,posts.root_id FROM posts JOIN users ON posts.author_id = users.id WHERE ((posts.root_id = {rootId}) OR (posts.id={rootId})) LIMIT {range[1]} OFFSET {range[0]};
+            f"""SELECT posts.id,users.username,posts.content,users.profile_picture,posts.created_at,posts.parent_id,posts.root_id FROM posts JOIN users ON posts.author_id = users.id WHERE ((posts.root_id = {rootId}) OR (posts.id={rootId}) OR (posts.parent_id={rootId})) LIMIT {range[1]} OFFSET {range[0]};
             """
         )
         result = self.getResults(dbCursor)
