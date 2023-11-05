@@ -325,6 +325,7 @@ def view_post_at_page(id: str, page: str):
             posts=posts,
             parent_id=id,
             root_id=posts[0]["root_id"],
+            root_name=posts[0]["username"],
             profile_picture=user["profile_picture"]
             if user is not None
             else "static/error.png",

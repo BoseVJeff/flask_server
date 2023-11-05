@@ -43,7 +43,8 @@ Home
                 <div class="w-full">
                     <form action="/create-post" method="post" class="grid grid-cols=[1fr_auto_.]">
                         <input type="text" name="content" id="content_{{post['id']}}"
-                            class="form-input bg-slate-500 col-start-1 col-span-1 rounded-l">
+                            class="form-input bg-slate-500 col-start-1 col-span-1 rounded-l placeholder:text-neutral-100"
+                            placeholder="Reply to {{post['username']}}">
                         <button type="submit" value="Post"
                             class="form-input cursor-pointer w-min bg-blue-500 col-start-2 col-span-1 grid place-items-center rounded-r">
                             <span class="material-symbols-rounded">
@@ -95,7 +96,8 @@ Home
     <form action="/create-post" method="post" class="grid grid-cols-[1fr_auto]">
         <!-- <input type="text" name="content" id="content" class="col-start-1 col-span-1 form-input bg-slate-500"> -->
         <textarea name="content" id="content"
-            class="col-start-1 col-span-1 form-textarea resize-none bg-slate-500 h-12 rounded-l"></textarea>
+            class="col-start-1 col-span-1 form-textarea resize-none bg-slate-500 h-12 rounded-l placeholder:text-neutral-100"
+            placeholder="{%if root_name %}Reply to {{root_name}} {%else%}Talk to the world{%endif%}"></textarea>
         <input type="submit" value="Post"
             class="col-start-2 col-span-1 form-input bg-blue-500 cursor-pointer rounded-r">
         {% if root_id %}
